@@ -2,8 +2,8 @@
 
 godot ECMAScript(typescript) project base
 
-1. download or build godot for ECMAScript
-2. clone
+1. recompile godot with ECMAScript (https://github.com/GodotExplorer/ECMAScript)
+2. clone this repository
 3. open folder in vscode
 4. enable AutomaticTasks in folder
 5. yarn
