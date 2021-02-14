@@ -11,7 +11,8 @@ config_version=4
 [application]
 
 config/name="godot typescript base"
-config/icon="res://icon.png"
+run/main_scene="res://scenes/root.tscn"
+config/icon="res://assets/icon.png"
 
 [physics]
 
