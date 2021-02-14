@@ -1,0 +1,16 @@
+{
+  "include": ["scripts/**/*"],
+  "compilerOptions": {
+    "rootDir": "scripts",
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext"],
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "jsx": "preserve",
+    "sourceMap": true,
+    "sourceRoot": ".",
+    "noEmitOnError": true
+  }
+}
