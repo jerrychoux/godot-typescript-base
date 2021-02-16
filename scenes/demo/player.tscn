@@ -24,12 +24,9 @@ radius = 54.9021
 height = 25.4719
 
 [node name="player" type="Area2D"]
-gravity = 0.0
+gravity = 0
 collision_mask = 0
 script = ExtResource( 5 )
-__meta__ = {
-"_edit_group_": true
-}
 
 [node name="AnimatedSprite" type="AnimatedSprite" parent="."]
 frames = SubResource( 1 )
@@ -37,3 +34,5 @@ animation = "up"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource( 2 )
+
+[connection signal="body_entered" from="." to="." method="_on_player_body_entered"]

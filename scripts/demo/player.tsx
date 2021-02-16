@@ -1,9 +1,25 @@
+import { signal, tool } from "../decorators";
+
+@tool
 export default class Player extends godot.Area2D {
   speed: number = 400;
   screenSize: godot.Vector2;
 
+  @signal
+  static readonly OnHited: string;
+
   _ready() {
     this.screenSize = this.get_viewport_rect().size;
+    // this.hide();
+  }
+
+  _on_player_body_entered(body: godot.Node) {
+    this.hide();
+
+    let collisionShape2D = this.$("CollisionShape2D") as godot.CollisionShape2D;
+    collisionShape2D.set_deferred("disabled", true);
+
+    this.emit_signal(Player.OnHited, body);
   }
 
   _process(delta: number) {
@@ -42,5 +58,12 @@ export default class Player extends godot.Area2D {
     position.y = godot.clamp(position.y, 0, this.screenSize.y);
 
     this.position = position;
+  }
+
+  start(pos: godot.Vector2) {
+    this.position = pos;
+
+    let collisionShape2D = this.$("CollisionShape2D") as godot.CollisionShape2D;
+    collisionShape2D.disabled = false;
   }
 }
