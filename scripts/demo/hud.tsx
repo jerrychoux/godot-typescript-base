@@ -29,6 +29,7 @@ export default class Hud extends godot.CanvasLayer {
   }
 
   async showGameOver() {
+    this.showMessage("Game Over");
     await godot.yield(this.messageTimer, "timeout");
 
     this.message.text = "Dodge the\nCreeps!";
