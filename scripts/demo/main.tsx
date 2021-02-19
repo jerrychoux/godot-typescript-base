@@ -9,7 +9,8 @@ export default class Main extends godot.Node2D {
   score: number = 0;
 
   _ready() {
-    this.gameNew();
+    godot.randomize();
+    // this.gameNew();
   }
 
   _on_player_OnHited(body: godot.Node) {}
@@ -50,6 +51,9 @@ export default class Main extends godot.Node2D {
   gameOver() {
     let scoreTimer = this.$("scoreTimer") as godot.Timer;
     scoreTimer.stop();
+
+    let enemyTimer = this.$("enemyTimer") as godot.Timer;
+    enemyTimer.stop();
   }
 
   gameNew() {
@@ -57,7 +61,9 @@ export default class Main extends godot.Node2D {
 
     let startPosition = this.$("startPosition") as godot.Position2D;
     let player = this.$("player") as Player;
-
     player.start(startPosition.position);
+
+    let startTimer = this.$("startTimer") as godot.Timer;
+    startTimer.start();
   }
 }
