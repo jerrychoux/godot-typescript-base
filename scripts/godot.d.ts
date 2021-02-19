@@ -3257,6 +3257,24 @@ declare module godot {
 	/** Gamepad right stick click. */
 	const JOY_R3: JoystickList.JOY_R3;
 
+	/** Gamepad SDL miscellaneous button. */
+	const JOY_MISC1: JoystickList.JOY_MISC1;
+
+	/** Gamepad SDL paddle 1 button. */
+	const JOY_PADDLE1: JoystickList.JOY_PADDLE1;
+
+	/** Gamepad SDL paddle 2 button. */
+	const JOY_PADDLE2: JoystickList.JOY_PADDLE2;
+
+	/** Gamepad SDL paddle 3 button. */
+	const JOY_PADDLE3: JoystickList.JOY_PADDLE3;
+
+	/** Gamepad SDL paddle 4 button. */
+	const JOY_PADDLE4: JoystickList.JOY_PADDLE4;
+
+	/** Gamepad SDL touchpad button. */
+	const JOY_TOUCHPAD: JoystickList.JOY_TOUCHPAD;
+
 	/** Gamepad left stick horizontal axis. */
 	const JOY_AXIS_0: JoystickList.JOY_AXIS_0;
 
@@ -3991,7 +4009,7 @@ declare module godot {
 		/** Gamepad button 15. */
 		JOY_BUTTON_15 = 15,
 		/** Represents the maximum number of joystick buttons supported. */
-		JOY_BUTTON_MAX = 16,
+		JOY_BUTTON_MAX = 22,
 		/** DualShock circle button. */
 		JOY_SONY_CIRCLE = 1,
 		/** DualShock X button. */
@@ -4054,6 +4072,18 @@ declare module godot {
 		JOY_R2 = 7,
 		/** Gamepad right stick click. */
 		JOY_R3 = 9,
+		/** Gamepad SDL miscellaneous button. */
+		JOY_MISC1 = 16,
+		/** Gamepad SDL paddle 1 button. */
+		JOY_PADDLE1 = 17,
+		/** Gamepad SDL paddle 2 button. */
+		JOY_PADDLE2 = 18,
+		/** Gamepad SDL paddle 3 button. */
+		JOY_PADDLE3 = 19,
+		/** Gamepad SDL paddle 4 button. */
+		JOY_PADDLE4 = 20,
+		/** Gamepad SDL touchpad button. */
+		JOY_TOUCHPAD = 21,
 		/** Gamepad left stick horizontal axis. */
 		JOY_AXIS_0 = 0,
 		/** Gamepad left stick vertical axis. */
@@ -4938,7 +4968,7 @@ declare module godot {
 		 sqrt(9) # Returns 3
 		 ```
 
-		 If you need negative inputs, use `System.Numerics.Complex` in C#. */
+		 **Note:**Negative values of `s` return NaN. If you need negative inputs, use `System.Numerics.Complex` in C#. */
 	function sqrt(s: number) : number;
 
 	/** Returns the floating-point remainder of `a/b`, keeping the sign of `a`.
@@ -5041,7 +5071,7 @@ declare module godot {
 		 ``` */
 	function sign(s: number) : number;
 
-	/** Returns the result of `x` raised to the power of `y`.
+	/** Returns the result of `base` raised to the power of `exp`.
 
 		 ```gdscript
 		 pow(2, 5) # Returns 32.0
@@ -5054,12 +5084,14 @@ declare module godot {
 
 		 ```gdscript
 		 log(10) # Returns 2.302585
-		 ``` */
+		 ```
+
+		 **Note:** The logarithm of `0` returns `-inf`, while negative values return `-nan`. */
 	function log(s: number) : number;
 
 	/** The natural exponential function. It raises the mathematical constant **e** to the power of `s` and returns it.
 
-		 **e** has an approximate value of 2.71828.
+		 **e** has an approximate value of 2.71828, and can be obtained with `exp(1)`.
 
 		 For exponents to other bases use the method `pow`.
 
@@ -5144,22 +5176,28 @@ declare module godot {
 		 ``` */
 	function range_lerp(value: number, istart: number, istop: number, ostart: number, ostop: number) : number;
 
-	/** Returns a number smoothly interpolated between the `from` and `to`, based on the `weight`. Similar to `lerp`, but interpolates faster at the beginning and slower at the end.
+	/** Returns the result of smoothly interpolating the value of `s` between `0` and `1`, based on the where `s` lies with respect to the edges `from` and `to`.
+
+		 The return value is `0` if `s <= from`, and `1` if `s >= to`. If `s` lies between `from` and `to`, the returned value follows an S-shaped curve that maps `s` between `0` and `1`.
+
+		 This S-shaped curve is the cubic Hermite interpolator, given by `f(s) = 3*s^2 - 2*s^3`.
 
 		 ```gdscript
 		 smoothstep(0, 2, -5.0) # Returns 0.0
-		 smoothstep(0, 2, 0.5)  # Returns 0.15625
-		 smoothstep(0, 2, 1.0)  # Returns 0.5
-		 smoothstep(0, 2, 2.0)  # Returns 1.0
+		 smoothstep(0, 2, 0.5) # Returns 0.15625
+		 smoothstep(0, 2, 1.0) # Returns 0.5
+		 smoothstep(0, 2, 2.0) # Returns 1.0
 		 ``` */
-	function smoothstep(p_from: number, to: number, weight: number) : number;
+	function smoothstep(p_from: number, to: number, s: number) : number;
 
 	/** Moves `from` toward `to` by the `delta` value.
 
 		 Use a negative `delta` value to move away.
 
 		 ```gdscript
+		 move_toward(5, 10, 4) # Returns 9
 		 move_toward(10, 5, 4) # Returns 6
+		 move_toward(10, 5, -1.5) # Returns 11.5
 		 ``` */
 	function move_toward(p_from: number, to: number, delta: number) : number;
 
@@ -5314,13 +5352,20 @@ declare module godot {
 		 ``` */
 	function clamp(value: number, min: number, max: number) : number;
 
-	/** Returns the nearest larger power of 2 for integer `value`.
+	/** Returns the nearest equal or larger power of 2 for integer `value`.
+
+		 In other words, returns the smallest value `a` where `a = pow(2, n)` such that `value <= a` for some non-negative integer `n`.
 
 		 ```gdscript
 		 nearest_po2(3) # Returns 4
 		 nearest_po2(4) # Returns 4
 		 nearest_po2(5) # Returns 8
-		 ``` */
+		 
+		 nearest_po2(0) # Returns 0 (this may not be what you expect)
+		 nearest_po2(-1) # Returns 0 (this may not be what you expect)
+		 ```
+
+		 **WARNING:** Due to the way it is implemented, this function returns `0` rather than `1` for non-positive values of `value` (in reality, 1 is the smallest integer power of 2). */
 	function nearest_po2(value: number) : number;
 
 	/** Returns a weak reference to an object.
@@ -5381,7 +5426,7 @@ declare module godot {
 		 This is the inverse of `char`. */
 	function ord(char: string) : number;
 
-	/** Converts one or more arguments to string in the best way possible.
+	/** Converts one or more arguments of any type to string in the best way possible.
 
 		 ```gdscript
 		 var a = [10, 20, 30]
@@ -5391,7 +5436,7 @@ declare module godot {
 		 ``` */
 	function str(...args) : string;
 
-	/** Converts one or more arguments to strings in the best way possible and prints them to the console.
+	/** Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 
 		 ```gdscript
 		 a = [1, 2, 3]
@@ -5960,7 +6005,9 @@ declare module godot {
 	         return min(0, abs(u - v) - 1)
 	 ```
 
-	 `_estimate_cost` should return a lower bound of the distance, i.e. `_estimate_cost(u, v) <= _compute_cost(u, v)`. This serves as a hint to the algorithm because the custom `_compute_cost` might be computation-heavy. If this is not the case, make `_estimate_cost` return the same value as `_compute_cost` to provide the algorithm with the most accurate information. */
+	 `_estimate_cost` should return a lower bound of the distance, i.e. `_estimate_cost(u, v) <= _compute_cost(u, v)`. This serves as a hint to the algorithm because the custom `_compute_cost` might be computation-heavy. If this is not the case, make `_estimate_cost` return the same value as `_compute_cost` to provide the algorithm with the most accurate information.
+
+	 If the default `_estimate_cost` and `_compute_cost` methods are used, or if the supplied `_estimate_cost` method returns a lower bound of the cost, then the paths returned by A* will be the lowest cost paths. Here, the cost of a path equals to the sum of the `_compute_cost` results of all segments in the path multiplied by the `weight_scale`s of the end points of the respective segments. If the default methods are used and the `weight_scale`s of all points are set to `1.0`, then this equals to the sum of Euclidean distances of all segments in the path. */
 	class AStar extends Reference {
 
 		/** Called when computing the cost between two connected points.
@@ -5976,7 +6023,9 @@ declare module godot {
 		/** Returns the next available point ID with no point associated to it. */
 		get_available_point_id() : number;
 
-		/** Adds a new point at the given position with the given identifier. The algorithm prefers points with lower `weight_scale` to form a path. The `id` must be 0 or larger, and the `weight_scale` must be 1 or larger.
+		/** Adds a new point at the given position with the given identifier. The `id` must be 0 or larger, and the `weight_scale` must be 1 or larger.
+
+		 The `weight_scale` is multiplied by the result of `_compute_cost` when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower `weight_scale`s to form a path.
 
 		 ```gdscript
 		 var astar = AStar.new()
@@ -5996,7 +6045,7 @@ declare module godot {
 		/** Returns the weight scale of the point associated with the given `id`. */
 		get_point_weight_scale(id: number) : number;
 
-		/** Sets the `weight_scale` for the point with the given `id`. */
+		/** Sets the `weight_scale` for the point with the given `id`. The `weight_scale` is multiplied by the result of `_compute_cost` when determining the overall cost of traveling across a segment from a neighboring point to this point. */
 		set_point_weight_scale(id: number, weight_scale: number) : void;
 
 		/** Removes the point associated with the given `id` from the points pool. */
@@ -6124,7 +6173,9 @@ declare module godot {
 		/** Returns the next available point ID with no point associated to it. */
 		get_available_point_id() : number;
 
-		/** Adds a new point at the given position with the given identifier. The algorithm prefers points with lower `weight_scale` to form a path. The `id` must be 0 or larger, and the `weight_scale` must be 1 or larger.
+		/** Adds a new point at the given position with the given identifier. The `id` must be 0 or larger, and the `weight_scale` must be 1 or larger.
+
+		 The `weight_scale` is multiplied by the result of `_compute_cost` when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower `weight_scale`s to form a path.
 
 		 ```gdscript
 		 var astar = AStar2D.new()
@@ -6144,7 +6195,7 @@ declare module godot {
 		/** Returns the weight scale of the point associated with the given `id`. */
 		get_point_weight_scale(id: number) : number;
 
-		/** Sets the `weight_scale` for the point with the given `id`. */
+		/** Sets the `weight_scale` for the point with the given `id`. The `weight_scale` is multiplied by the result of `_compute_cost` when determining the overall cost of traveling across a segment from a neighboring point to this point. */
 		set_point_weight_scale(id: number, weight_scale: number) : void;
 
 		/** Removes the point associated with the given `id` from the points pool. */
@@ -6761,7 +6812,7 @@ declare module godot {
 		//@ts-ignore
 		audio_track_insert_key(track_idx: number, time: number, stream: Resource, start_offset: number = 0, end_offset: number = 0) : number;
 
-		/** Sets the stream of the key identified by `key_idx` to value `offset`. The `track_idx` must be the index of an Audio Track. */
+		/** Sets the stream of the key identified by `key_idx` to value `stream`. The `track_idx` must be the index of an Audio Track. */
 		audio_track_set_key_stream(track_idx: number, key_idx: number, stream: Resource) : void;
 
 		/** Sets the start offset of the key identified by `key_idx` to value `offset`. The `track_idx` must be the index of an Audio Track. */
@@ -7555,6 +7606,12 @@ declare module godot {
 
 		/** Returns the currently playing animation state. */
 		get_current_node() : string;
+
+		/** Returns the playback position within the current animation state. */
+		get_current_play_position() : number;
+
+		/**  */
+		get_current_length() : number;
 
 		/** Returns the current travel path as computed internally by the A* algorithm. */
 		get_travel_path() : PoolStringArray;
@@ -8533,36 +8590,68 @@ declare module godot {
 	}
 	namespace Area {
 
-		/** Emitted when another area exits. */
+		/** Emitted when another Area exits this Area. Requires `monitoring` to be set to `true`.
+
+			 `area` the other Area. */
 		const area_exited: 'area_exited';
 
-		/** Emitted when another area exits, reporting which areas were overlapping. */
+		/** Emitted when one of another Area's `Shape`s enters one of this Area's `Shape`s. Requires `monitoring` to be set to `true`.
+
+			 `area_id` the `RID` of the other Area's `CollisionObject` used by the `PhysicsServer`.
+
+			 `area` the other Area.
+
+			 `area_shape` the index of the `Shape` of the other Area used by the `PhysicsServer`.
+
+			 `local_shape` the index of the `Shape` of this Area used by the `PhysicsServer`. */
 		const area_shape_exited: 'area_shape_exited';
 
-		/** Emitted when a physics body enters.
+		/** Emitted when a `PhysicsBody` or `GridMap` enters this Area. Requires `monitoring` to be set to `true`. `GridMap`s are detected if the `MeshLibrary` has Collision `Shape`s.
 
-			 The `body` argument can either be a `PhysicsBody` or a `GridMap` instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body). */
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody` or `GridMap`. */
 		const body_entered: 'body_entered';
 
-		/** Emitted when a physics body enters, reporting which shapes overlapped.
+		/** Emitted when one of a `PhysicsBody` or `GridMap`'s `Shape`s enters one of this Area's `Shape`s. Requires `monitoring` to be set to `true`. `GridMap`s are detected if the `MeshLibrary` has Collision `Shape`s.
 
-			 The `body` argument can either be a `PhysicsBody` or a `GridMap` instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body). */
+			 `body_id` the `RID` of the `PhysicsBody` or `MeshLibrary`'s `CollisionObject` used by the `PhysicsServer`.
+
+			 `body` the `Node`, if it exists in the tree, of the `PhysicsBody` or `GridMap`.
+
+			 `body_shape` the index of the `Shape` of the `PhysicsBody` or `GridMap` used by the `PhysicsServer`.
+
+			 `local_shape` the index of the `Shape` of this Area used by the `PhysicsServer`. */
 		const body_shape_entered: 'body_shape_entered';
 
-		/** Emitted when another area enters. */
+		/** Emitted when another Area enters this Area. Requires `monitoring` to be set to `true`.
+
+			 `area` the other Area. */
 		const area_entered: 'area_entered';
 
-		/** Emitted when another area enters, reporting which areas overlapped. `shape_owner_get_owner(shape_find_owner(shape))` returns the parent object of the owner of the `shape`. */
+		/** Emitted when one of another Area's `Shape`s enters one of this Area's `Shape`s. Requires `monitoring` to be set to `true`.
+
+			 `area_id` the `RID` of the other Area's `CollisionObject` used by the `PhysicsServer`.
+
+			 `area` the other Area.
+
+			 `area_shape` the index of the `Shape` of the other Area used by the `PhysicsServer`.
+
+			 `local_shape` the index of the `Shape` of this Area used by the `PhysicsServer`. */
 		const area_shape_entered: 'area_shape_entered';
 
-		/** Emitted when a physics body exits.
+		/** Emitted when a `PhysicsBody` or `GridMap` exits this Area. Requires `monitoring` to be set to `true`. `GridMap`s are detected if the `MeshLibrary` has Collision `Shape`s.
 
-			 The `body` argument can either be a `PhysicsBody` or a `GridMap` instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body). */
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody` or `GridMap`. */
 		const body_exited: 'body_exited';
 
-		/** Emitted when a physics body exits, reporting which shapes were overlapping.
+		/** Emitted when one of a `PhysicsBody` or `GridMap`'s `Shape`s enters one of this Area's `Shape`s. Requires `monitoring` to be set to `true`. `GridMap`s are detected if the `MeshLibrary` has Collision `Shape`s.
 
-			 The `body` argument can either be a `PhysicsBody` or a `GridMap` instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body). */
+			 `body_id` the `RID` of the `PhysicsBody` or `MeshLibrary`'s `CollisionObject` used by the `PhysicsServer`.
+
+			 `body` the `Node`, if it exists in the tree, of the `PhysicsBody` or `GridMap`.
+
+			 `body_shape` the index of the `Shape` of the `PhysicsBody` or `GridMap` used by the `PhysicsServer`.
+
+			 `local_shape` the index of the `Shape` of this Area used by the `PhysicsServer`. */
 		const body_shape_exited: 'body_shape_exited';
 		enum SpaceOverride {
 			/** This area does not affect gravity/damping. */
@@ -8759,36 +8848,68 @@ declare module godot {
 	}
 	namespace Area2D {
 
-		/** Emitted when another area exits. */
+		/** Emitted when another Area2D exits this Area2D. Requires `monitoring` to be set to `true`.
+
+			 `area` the other Area2D. */
 		const area_exited: 'area_exited';
 
-		/** Emitted when another area exits, reporting which shapes were overlapping. */
+		/** Emitted when one of another Area2D's `Shape2D`s exits one of this Area2D's `Shape2D`s. Requires `monitoring` to be set to `true`.
+
+			 `area_id` the `RID` of the other Area2D's `CollisionObject2D` used by the `Physics2DServer`.
+
+			 `area` the other Area2D.
+
+			 `area_shape` the index of the `Shape2D` of the other Area2D used by the `Physics2DServer`.
+
+			 `local_shape` the index of the `Shape2D` of this Area2D used by the `Physics2DServer`. */
 		const area_shape_exited: 'area_shape_exited';
 
-		/** Emitted when a physics body enters.
+		/** Emitted when a `PhysicsBody2D` or `TileMap` enters this Area2D. Requires `monitoring` to be set to `true`. `TileMap`s are detected if the `TileSet` has Collision `Shape2D`s.
 
-			 The `body` argument can either be a `PhysicsBody2D` or a `TileMap` instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body). */
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody2D` or `TileMap`. */
 		const body_entered: 'body_entered';
 
-		/** Emitted when a physics body enters, reporting which shapes overlapped.
+		/** Emitted when one of a `PhysicsBody2D` or `TileMap`'s `Shape2D`s enters one of this Area2D's `Shape2D`s. Requires `monitoring` to be set to `true`. `TileMap`s are detected if the `TileSet` has Collision `Shape2D`s.
 
-			 The `body` argument can either be a `PhysicsBody2D` or a `TileMap` instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body). */
+			 `body_id` the `RID` of the `PhysicsBody2D` or `TileSet`'s `CollisionObject2D` used by the `Physics2DServer`.
+
+			 `body` the `Node`, if it exists in the tree, of the `PhysicsBody2D` or `TileMap`.
+
+			 `body_shape` the index of the `Shape2D` of the `PhysicsBody2D` or `TileMap` used by the `Physics2DServer`.
+
+			 `local_shape` the index of the `Shape2D` of this Area2D used by the `Physics2DServer`. */
 		const body_shape_entered: 'body_shape_entered';
 
-		/** Emitted when another area enters. */
+		/** Emitted when another Area2D enters this Area2D. Requires `monitoring` to be set to `true`.
+
+			 `area` the other Area2D. */
 		const area_entered: 'area_entered';
 
-		/** Emitted when another area enters, reporting which shapes overlapped. `shape_owner_get_owner(shape_find_owner(shape))` returns the parent object of the owner of the `shape`. */
+		/** Emitted when one of another Area2D's `Shape2D`s enters one of this Area2D's `Shape2D`s. Requires `monitoring` to be set to `true`.
+
+			 `area_id` the `RID` of the other Area2D's `CollisionObject2D` used by the `Physics2DServer`.
+
+			 `area` the other Area2D.
+
+			 `area_shape` the index of the `Shape2D` of the other Area2D used by the `Physics2DServer`.
+
+			 `local_shape` the index of the `Shape2D` of this Area2D used by the `Physics2DServer`. */
 		const area_shape_entered: 'area_shape_entered';
 
-		/** Emitted when a physics body exits.
+		/** Emitted when a `PhysicsBody2D` or `TileMap` exits this Area2D. Requires `monitoring` to be set to `true`. `TileMap`s are detected if the `TileSet` has Collision `Shape2D`s.
 
-			 The `body` argument can either be a `PhysicsBody2D` or a `TileMap` instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body). */
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody2D` or `TileMap`. */
 		const body_exited: 'body_exited';
 
-		/** Emitted when a physics body exits, reporting which shapes were overlapping.
+		/** Emitted when one of a `PhysicsBody2D` or `TileMap`'s `Shape2D`s exits one of this Area2D's `Shape2D`s. Requires `monitoring` to be set to `true`. `TileMap`s are detected if the `TileSet` has Collision `Shape2D`s.
 
-			 The `body` argument can either be a `PhysicsBody2D` or a `TileMap` instance (while TileMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body). */
+			 `body_id` the `RID` of the `PhysicsBody2D` or `TileSet`'s `CollisionObject2D` used by the `Physics2DServer`.
+
+			 `body` the `Node`, if it exists in the tree, of the `PhysicsBody2D` or `TileMap`.
+
+			 `body_shape` the index of the `Shape2D` of the `PhysicsBody2D` or `TileMap` used by the `Physics2DServer`.
+
+			 `local_shape` the index of the `Shape2D` of this Area2D used by the `Physics2DServer`. */
 		const body_shape_exited: 'body_shape_exited';
 		enum SpaceOverride {
 			/** This area does not affect gravity/damping. */
@@ -9033,6 +9154,92 @@ declare module godot {
 
 		/** Index array will be used. */
 		const ARRAY_FORMAT_INDEX: ArrayFormat.ARRAY_FORMAT_INDEX;
+	}
+
+	/** Container that preserves its child controls' aspect ratio.
+	 Arranges child controls in a way to preserve their aspect ratio automatically whenever the container is resized. Solves the problem where the container size is dynamic and the contents' size needs to adjust accordingly without losing proportions. */
+	class AspectRatioContainer extends Container {
+
+		/** The aspect ratio to enforce on child controls. This is the width divided by the height. The ratio depends on the `stretch_mode`. */
+		ratio: number;
+
+		/** The stretch mode used to align child controls. */
+		stretch_mode: number;
+
+		/** Specifies the horizontal relative position of child controls. */
+		alignment_horizontal: number;
+
+		/** Specifies the vertical relative position of child controls. */
+		alignment_vertical: number;
+
+		/** Getter of `ratio` property */
+		get_ratio() : number;
+
+		/** Setter of `ratio` property */
+		set_ratio(p_value: number) : void;
+
+		/** Getter of `stretch_mode` property */
+		get_stretch_mode() : number;
+
+		/** Setter of `stretch_mode` property */
+		set_stretch_mode(p_value: number) : void;
+
+		/** Getter of `alignment_horizontal` property */
+		get_alignment_horizontal() : number;
+
+		/** Setter of `alignment_horizontal` property */
+		set_alignment_horizontal(p_value: number) : void;
+
+		/** Getter of `alignment_vertical` property */
+		get_alignment_vertical() : number;
+
+		/** Setter of `alignment_vertical` property */
+		set_alignment_vertical(p_value: number) : void;
+	}
+	namespace AspectRatioContainer {
+		enum AlignMode {
+			/** Aligns child controls with the beginning (left or top) of the container. */
+			ALIGN_BEGIN = 0,
+			/** Aligns child controls with the center of the container. */
+			ALIGN_CENTER = 1,
+			/** Aligns child controls with the end (right or bottom) of the container. */
+			ALIGN_END = 2,
+		}
+		enum StretchMode {
+			/** The height of child controls is automatically adjusted based on the width of the container. */
+			STRETCH_WIDTH_CONTROLS_HEIGHT = 0,
+			/** The width of child controls is automatically adjusted based on the height of the container. */
+			STRETCH_HEIGHT_CONTROLS_WIDTH = 1,
+			/** The bounding rectangle of child controls is automatically adjusted to fit inside the container while keeping the aspect ratio. */
+			STRETCH_FIT = 2,
+			/** The width and height of child controls is automatically adjusted to make their bounding rectangle cover the entire area of the container while keeping the aspect ratio.
+
+			 When the bounding rectangle of child controls exceed the container's size and `Control.rect_clip_content` is enabled, this allows to show only the container's area restricted by its own bounding rectangle. */
+			STRETCH_COVER = 3,
+		}
+
+		/** The height of child controls is automatically adjusted based on the width of the container. */
+		const STRETCH_WIDTH_CONTROLS_HEIGHT: StretchMode.STRETCH_WIDTH_CONTROLS_HEIGHT;
+
+		/** The width of child controls is automatically adjusted based on the height of the container. */
+		const STRETCH_HEIGHT_CONTROLS_WIDTH: StretchMode.STRETCH_HEIGHT_CONTROLS_WIDTH;
+
+		/** The bounding rectangle of child controls is automatically adjusted to fit inside the container while keeping the aspect ratio. */
+		const STRETCH_FIT: StretchMode.STRETCH_FIT;
+
+		/** The width and height of child controls is automatically adjusted to make their bounding rectangle cover the entire area of the container while keeping the aspect ratio.
+
+		 When the bounding rectangle of child controls exceed the container's size and `Control.rect_clip_content` is enabled, this allows to show only the container's area restricted by its own bounding rectangle. */
+		const STRETCH_COVER: StretchMode.STRETCH_COVER;
+
+		/** Aligns child controls with the beginning (left or top) of the container. */
+		const ALIGN_BEGIN: AlignMode.ALIGN_BEGIN;
+
+		/** Aligns child controls with the center of the container. */
+		const ALIGN_CENTER: AlignMode.ALIGN_CENTER;
+
+		/** Aligns child controls with the end (right or bottom) of the container. */
+		const ALIGN_END: AlignMode.ALIGN_END;
 	}
 
 	/** Packs multiple small textures in a single, bigger one. Helps to optimize video memory costs and render calls.
@@ -11363,99 +11570,168 @@ declare module godot {
 	 **Note:** This node has many known bugs and will be `url=https://godotengine.org/article/godot-40-will-get-new-modernized-lightmapper`rewritten for Godot 4.0`/url`. See `url=https://github.com/godotengine/godot/issues/30929`GitHub issue #30929`/url`. */
 	class BakedLightmap extends VisualInstance {
 
-		/** Grid subdivision size for lightmapper calculation. The default value will work for most cases. Increase for better lighting on small details or if your scene is very large. */
-		bake_cell_size: number;
+		/** Size of the baked lightmap. Only meshes inside this region will be included in the baked lightmap, also used as the bounds of the captured region for dynamic lighting. */
+		extents: Vector3;
 
-		/** Three quality modes are available. Higher quality requires more rendering time. See `BakeQuality`. */
-		bake_quality: number;
+		/** Determines the amount of samples per texel used in indrect light baking. The amount of samples for each quality level can be configured in the project settings. */
+		quality: number;
 
-		/** Lightmapping mode. See `BakeMode`. */
-		bake_mode: number;
+		/** Number of light bounces that are taken into account during baking. */
+		bounces: number;
 
-		/** Defines how far the light will travel before it is no longer effective. The higher the number, the farther the light will travel. For instance, if the value is set to 2, the light will go twice as far. If the value is set to 0.5, the light will only go half as far. */
-		bake_propagation: number;
+		/** When enabled, a lightmap denoiser will be used to reduce the noise inherent to Monte Carlo based global illumination. */
+		use_denoiser: boolean;
 
-		/** Multiplies the light sources' intensity by this value. For instance, if the value is set to 2, lights will be twice as bright. If the value is set to 0.5, lights will be half as bright. */
-		bake_energy: number;
+		/** Raycasting bias used during baking to avoid floating point precission issues. */
+		bias: number;
 
-		/** If `true`, the lightmap can capture light values greater than `1.0`. Turning this off will result in a smaller file size. */
-		bake_hdr: boolean;
+		/** If a baked mesh doesn't have a UV2 size hint, this value will be used to roughly compute a suitable lightmap size. */
+		default_texels_per_unit: number;
 
-		/** The size of the affected area. */
-		bake_extents: Vector3;
+		/** When enabled, the lightmapper will merge the textures for all meshes into a single large layered texture. Not supported in GLES2. */
+		atlas_generate: boolean;
 
-		/** If a `Mesh.lightmap_size_hint` isn't specified, the lightmap baker will dynamically set the lightmap size using this value. This value is measured in texels per world unit. The maximum lightmap texture size is 4096x4096. */
-		bake_default_texels_per_unit: number;
+		/** Maximum size of each lightmap layer, only used when `atlas_generate` is enabled. */
+		atlas_max_size: number;
 
-		/** Grid size used for real-time capture information on dynamic objects. Cannot be larger than `bake_cell_size`. */
+		/** Decides which environment to use during baking. */
+		environment_mode: number;
+
+		/** The `Sky` resource to use when `environment_mode` is set o `ENVIRONMENT_MODE_CUSTOM_SKY`. */
+		environment_custom_sky: Sky;
+
+		/** The rotation of the baked custom sky. */
+		environment_custom_sky_rotation_degrees: Vector3;
+
+		/** The environment color when `environment_mode` is set to `ENVIRONMENT_MODE_CUSTOM_COLOR`. */
+		environment_custom_color: Color;
+
+		/** The energy scaling factor when when `environment_mode` is set to `ENVIRONMENT_MODE_CUSTOM_COLOR` or `ENVIRONMENT_MODE_CUSTOM_SKY`. */
+		environment_custom_energy: number;
+
+		/** When enabled, an octree containing the scene's lighting information will be computed. This octree will then be used to light dynamic objects in the scene. */
+		capture_enabled: boolean;
+
+		/** Grid size used for real-time capture information on dynamic objects. */
 		capture_cell_size: number;
 
-		/** The location where lightmaps will be saved. */
+		/** Bake quality of the capture data. */
+		capture_quality: number;
+
+		/** Bias value to reduce the amount of light proagation in the captured octree. */
+		capture_propagation: number;
+
+		/** Deprecated, in previous versions it determined the location where lightmaps were be saved. */
 		image_path: string;
 
 		/** The calculated light data. */
 		light_data: BakedLightmapData;
 
-		/** Bakes the lightmaps within the currently edited scene. Returns a `BakeError` to signify if the bake was successful, or if unsuccessful, how the bake failed. */
+		/** Bakes the lightmap, scanning from the given `from_node` root and saves the resulting `BakedLightmapData` in `data_save_path`. If no save path is provided it will try to match the path from the current `light_data`. */
 		//@ts-ignore
-		bake(from_node: Node = null, create_visual_debug: boolean = false) : number;
+		bake(from_node: Node = null, data_save_path: string = "") : number;
 
-		/** Executes a dry run bake of lightmaps within the currently edited scene. */
-		debug_bake() : void;
-
-		/** Getter of `bake_cell_size` property */
-		get_bake_cell_size() : number;
-
-		/** Setter of `bake_cell_size` property */
-		set_bake_cell_size(p_value: number) : void;
-
-		/** Getter of `bake_quality` property */
-		get_bake_quality() : number;
-
-		/** Setter of `bake_quality` property */
-		set_bake_quality(p_value: number) : void;
-
-		/** Getter of `bake_mode` property */
-		get_bake_mode() : number;
-
-		/** Setter of `bake_mode` property */
-		set_bake_mode(p_value: number) : void;
-
-		/** Getter of `bake_propagation` property */
-		get_propagation() : number;
-
-		/** Setter of `bake_propagation` property */
-		set_propagation(p_value: number) : void;
-
-		/** Getter of `bake_energy` property */
-		get_energy() : number;
-
-		/** Setter of `bake_energy` property */
-		set_energy(p_value: number) : void;
-
-		/** Getter of `bake_hdr` property */
-		is_hdr() : boolean;
-
-		/** Setter of `bake_hdr` property */
-		set_hdr(p_value: boolean) : void;
-
-		/** Getter of `bake_extents` property */
+		/** Getter of `extents` property */
 		get_extents() : Vector3;
 
-		/** Setter of `bake_extents` property */
+		/** Setter of `extents` property */
 		set_extents(p_value: Vector3) : void;
 
-		/** Getter of `bake_default_texels_per_unit` property */
-		get_bake_default_texels_per_unit() : number;
+		/** Getter of `quality` property */
+		get_bake_quality() : number;
 
-		/** Setter of `bake_default_texels_per_unit` property */
-		set_bake_default_texels_per_unit(p_value: number) : void;
+		/** Setter of `quality` property */
+		set_bake_quality(p_value: number) : void;
+
+		/** Getter of `bounces` property */
+		get_bounces() : number;
+
+		/** Setter of `bounces` property */
+		set_bounces(p_value: number) : void;
+
+		/** Getter of `use_denoiser` property */
+		is_using_denoiser() : boolean;
+
+		/** Setter of `use_denoiser` property */
+		set_use_denoiser(p_value: boolean) : void;
+
+		/** Getter of `bias` property */
+		get_bias() : number;
+
+		/** Setter of `bias` property */
+		set_bias(p_value: number) : void;
+
+		/** Getter of `default_texels_per_unit` property */
+		get_default_texels_per_unit() : number;
+
+		/** Setter of `default_texels_per_unit` property */
+		set_default_texels_per_unit(p_value: number) : void;
+
+		/** Getter of `atlas_generate` property */
+		is_generate_atlas_enabled() : boolean;
+
+		/** Setter of `atlas_generate` property */
+		set_generate_atlas(p_value: boolean) : void;
+
+		/** Getter of `atlas_max_size` property */
+		get_max_atlas_size() : number;
+
+		/** Setter of `atlas_max_size` property */
+		set_max_atlas_size(p_value: number) : void;
+
+		/** Getter of `environment_mode` property */
+		get_environment_mode() : number;
+
+		/** Setter of `environment_mode` property */
+		set_environment_mode(p_value: number) : void;
+
+		/** Getter of `environment_custom_sky` property */
+		get_environment_custom_sky() : Sky;
+
+		/** Setter of `environment_custom_sky` property */
+		set_environment_custom_sky(p_value: Sky) : void;
+
+		/** Getter of `environment_custom_sky_rotation_degrees` property */
+		get_environment_custom_sky_rotation_degrees() : Vector3;
+
+		/** Setter of `environment_custom_sky_rotation_degrees` property */
+		set_environment_custom_sky_rotation_degrees(p_value: Vector3) : void;
+
+		/** Getter of `environment_custom_color` property */
+		get_environment_custom_color() : Color;
+
+		/** Setter of `environment_custom_color` property */
+		set_environment_custom_color(p_value: Color) : void;
+
+		/** Getter of `environment_custom_energy` property */
+		get_environment_custom_energy() : number;
+
+		/** Setter of `environment_custom_energy` property */
+		set_environment_custom_energy(p_value: number) : void;
+
+		/** Getter of `capture_enabled` property */
+		get_capture_enabled() : boolean;
+
+		/** Setter of `capture_enabled` property */
+		set_capture_enabled(p_value: boolean) : void;
 
 		/** Getter of `capture_cell_size` property */
 		get_capture_cell_size() : number;
 
 		/** Setter of `capture_cell_size` property */
 		set_capture_cell_size(p_value: number) : void;
+
+		/** Getter of `capture_quality` property */
+		get_capture_quality() : number;
+
+		/** Setter of `capture_quality` property */
+		set_capture_quality(p_value: number) : void;
+
+		/** Getter of `capture_propagation` property */
+		get_capture_propagation() : number;
+
+		/** Setter of `capture_propagation` property */
+		set_capture_propagation(p_value: number) : void;
 
 		/** Getter of `image_path` property */
 		get_image_path() : string;
@@ -11479,22 +11755,34 @@ declare module godot {
 			BAKE_ERROR_NO_MESHES = 2,
 			/** Returns when the baker cannot save per-mesh textures to file. */
 			BAKE_ERROR_CANT_CREATE_IMAGE = 3,
+			/** The size of the generated lightmaps is too large. */
+			BAKE_ERROR_LIGHTMAP_SIZE = 4,
+			/** Some mesh contains UV2 values outside the ``0,1`` range. */
+			BAKE_ERROR_INVALID_MESH = 5,
 			/** Returns if user cancels baking. */
-			BAKE_ERROR_USER_ABORTED = 4,
-		}
-		enum BakeMode {
-			/** Less precise but faster bake mode. */
-			BAKE_MODE_CONE_TRACE = 0,
-			/** More precise bake mode but can take considerably longer to bake. */
-			BAKE_MODE_RAY_TRACE = 1,
+			BAKE_ERROR_USER_ABORTED = 6,
+			/**  */
+			BAKE_ERROR_NO_LIGHTMAPPER = 7,
 		}
 		enum BakeQuality {
 			/** The lowest bake quality mode. Fastest to calculate. */
 			BAKE_QUALITY_LOW = 0,
 			/** The default bake quality mode. */
 			BAKE_QUALITY_MEDIUM = 1,
-			/** The highest bake quality mode. Takes longer to calculate. */
+			/** A higher bake quality mode. Takes longer to calculate. */
 			BAKE_QUALITY_HIGH = 2,
+			/** The highest bake quality mode. Takes the longest to calculate. */
+			BAKE_QUALITY_ULTRA = 3,
+		}
+		enum EnvironmentMode {
+			/** No environment is used during baking. */
+			ENVIRONMENT_MODE_DISABLED = 0,
+			/** The baked environment is automatically picked from the current scene. */
+			ENVIRONMENT_MODE_SCENE = 1,
+			/** A custom sky is used as environment during baking. */
+			ENVIRONMENT_MODE_CUSTOM_SKY = 2,
+			/** A custom solid color is used as environment during baking. */
+			ENVIRONMENT_MODE_CUSTOM_COLOR = 3,
 		}
 
 		/** The lowest bake quality mode. Fastest to calculate. */
@@ -11503,14 +11791,11 @@ declare module godot {
 		/** The default bake quality mode. */
 		const BAKE_QUALITY_MEDIUM: BakeQuality.BAKE_QUALITY_MEDIUM;
 
-		/** The highest bake quality mode. Takes longer to calculate. */
+		/** A higher bake quality mode. Takes longer to calculate. */
 		const BAKE_QUALITY_HIGH: BakeQuality.BAKE_QUALITY_HIGH;
 
-		/** Less precise but faster bake mode. */
-		const BAKE_MODE_CONE_TRACE: BakeMode.BAKE_MODE_CONE_TRACE;
-
-		/** More precise bake mode but can take considerably longer to bake. */
-		const BAKE_MODE_RAY_TRACE: BakeMode.BAKE_MODE_RAY_TRACE;
+		/** The highest bake quality mode. Takes the longest to calculate. */
+		const BAKE_QUALITY_ULTRA: BakeQuality.BAKE_QUALITY_ULTRA;
 
 		/** Baking was successful. */
 		const BAKE_ERROR_OK: BakeError.BAKE_ERROR_OK;
@@ -11524,8 +11809,29 @@ declare module godot {
 		/** Returns when the baker cannot save per-mesh textures to file. */
 		const BAKE_ERROR_CANT_CREATE_IMAGE: BakeError.BAKE_ERROR_CANT_CREATE_IMAGE;
 
+		/** The size of the generated lightmaps is too large. */
+		const BAKE_ERROR_LIGHTMAP_SIZE: BakeError.BAKE_ERROR_LIGHTMAP_SIZE;
+
+		/** Some mesh contains UV2 values outside the ``0,1`` range. */
+		const BAKE_ERROR_INVALID_MESH: BakeError.BAKE_ERROR_INVALID_MESH;
+
 		/** Returns if user cancels baking. */
 		const BAKE_ERROR_USER_ABORTED: BakeError.BAKE_ERROR_USER_ABORTED;
+
+		/**  */
+		const BAKE_ERROR_NO_LIGHTMAPPER: BakeError.BAKE_ERROR_NO_LIGHTMAPPER;
+
+		/** No environment is used during baking. */
+		const ENVIRONMENT_MODE_DISABLED: EnvironmentMode.ENVIRONMENT_MODE_DISABLED;
+
+		/** The baked environment is automatically picked from the current scene. */
+		const ENVIRONMENT_MODE_SCENE: EnvironmentMode.ENVIRONMENT_MODE_SCENE;
+
+		/** A custom sky is used as environment during baking. */
+		const ENVIRONMENT_MODE_CUSTOM_SKY: EnvironmentMode.ENVIRONMENT_MODE_CUSTOM_SKY;
+
+		/** A custom solid color is used as environment during baking. */
+		const ENVIRONMENT_MODE_CUSTOM_COLOR: EnvironmentMode.ENVIRONMENT_MODE_CUSTOM_COLOR;
 	}
 
 	/** 
@@ -11548,7 +11854,7 @@ declare module godot {
 		octree: PoolByteArray;
 
 		/**  */
-		add_user(path: string, lightmap: Texture, instance: number) : void;
+		add_user(path: string, lightmap: Resource, lightmap_slice: number, lightmap_uv_rect: Rect2, instance: number) : void;
 
 		/**  */
 		get_user_count() : number;
@@ -11557,10 +11863,13 @@ declare module godot {
 		get_user_path(user_idx: number) : string;
 
 		/**  */
-		get_user_lightmap(user_idx: number) : Texture;
+		get_user_lightmap(user_idx: number) : Resource;
 
 		/**  */
 		clear_users() : void;
+
+		/**  */
+		clear_data() : void;
 
 		/** Getter of `bounds` property */
 		get_bounds() : AABB;
@@ -12115,7 +12424,9 @@ declare module godot {
 	/** CPU-based 3D particle emitter.
 	 CPU-based 3D particle node used to create a variety of particle systems and effects.
 
-	 See also `Particles`, which provides the same functionality with hardware acceleration, but may not run on older devices. */
+	 See also `Particles`, which provides the same functionality with hardware acceleration, but may not run on older devices.
+
+	 **Note:** Unlike `Particles`, the visibility rect is generated on-the-fly and doesn't need to be configured by the user. */
 	//@ts-ignore
 	class CPUParticles extends GeometryInstance {
 
@@ -12874,7 +13185,9 @@ declare module godot {
 	/** CPU-based 2D particle emitter.
 	 CPU-based 2D particle node used to create a variety of particle systems and effects.
 
-	 See also `Particles2D`, which provides the same functionality with hardware acceleration, but may not run on older devices. */
+	 See also `Particles2D`, which provides the same functionality with hardware acceleration, but may not run on older devices.
+
+	 **Note:** Unlike `Particles2D`, the visibility rect is generated on-the-fly and doesn't need to be configured by the user. */
 	class CPUParticles2D extends Node2D {
 
 		/** If `true`, particles are being emitted. */
@@ -15693,7 +16006,9 @@ declare module godot {
 		//@ts-ignore
 		static class_has_method(p_class: string, method: string, no_inheritance: boolean = false) : boolean;
 
-		/** Returns an array with all the methods of `class` or its ancestry if `no_inheritance` is `false`. Every element of the array is a `Dictionary` with the following keys: `args`, `default_args`, `flags`, `id`, `name`, `return: (class_name, hint, hint_string, name, type, usage)`. */
+		/** Returns an array with all the methods of `class` or its ancestry if `no_inheritance` is `false`. Every element of the array is a `Dictionary` with the following keys: `args`, `default_args`, `flags`, `id`, `name`, `return: (class_name, hint, hint_string, name, type, usage)`.
+
+		 **Note:` In exported release builds the debug info is not available, so the returned dictionaries will contain only method names. */
 		//@ts-ignore
 		static class_get_method_list(p_class: string, no_inheritance: boolean = false) : any[];
 
@@ -16353,12 +16668,12 @@ declare module godot {
 	namespace ConcavePolygonShape2D {
 	}
 
-	/** A twist joint between two 3D bodies.
+	/** A twist joint between two 3D PhysicsBodies.
 	 The joint can rotate the bodies across an axis defined by the local x-axes of the `Joint`.
 
 	 The twist axis is initiated as the X axis of the `Joint`.
 
-	 Once the Bodies swing, the twist axis is calculated as the middle of the x-axes of the Joint in the local space of the two Bodies. */
+	 Once the Bodies swing, the twist axis is calculated as the middle of the x-axes of the Joint in the local space of the two Bodies. See also `Generic6DOFJoint`. */
 	class ConeTwistJoint extends Joint {
 
 		/** Swing is rotation from side to side, around the axis perpendicular to the twist axis.
@@ -16980,6 +17295,12 @@ declare module godot {
 
 		/** Give up the focus. No other control will be able to receive keyboard input. */
 		release_focus() : void;
+
+		/** Finds the previous (above in the tree) `Control` that can receive the focus. */
+		find_prev_valid_focus() : Control;
+
+		/** Finds the next (below in the tree) `Control` that can receive the focus. */
+		find_next_valid_focus() : Control;
 
 		/** Returns the control that has the keyboard focus or `null` if none. */
 		get_focus_owner() : Control;
@@ -17924,7 +18245,9 @@ declare module godot {
 	/** Generate an axis-aligned cuboid `PrimitiveMesh`.
 	 Generate an axis-aligned cuboid `PrimitiveMesh`.
 
-	 The cube's UV layout is arranged in a 3×2 layout that allows texturing each face individually. To apply the same texture on all faces, change the material's UV property to `Vector3(3, 2, 1)`. */
+	 The cube's UV layout is arranged in a 3×2 layout that allows texturing each face individually. To apply the same texture on all faces, change the material's UV property to `Vector3(3, 2, 1)`.
+
+	 **Note:** When using a large textured `CubeMesh` (e.g. as a floor), you may stumble upon UV jittering issues depending on the camera angle. To solve this, increase `subdivide_depth`, `subdivide_height` and `subdivide_width` until you no longer notice UV jittering. */
 	class CubeMesh extends PrimitiveMesh {
 
 		/** Size of the cuboid mesh. */
@@ -18989,26 +19312,28 @@ declare module godot {
 	namespace ECMAScriptModule {
 	}
 
-	/** A script that is executed when exporting projects.
-	  */
+	/** A script that is executed when exporting the project.
+	 Editor export plugins are automatically activated whenever the user exports the project. Their most common use is to determine what files are being included in the exported project. For each plugin, `_export_begin` is called at the beginning of the export process and then `_export_file` is called for each exported file. */
 	class EditorExportPlugin extends Reference {
 
-		/** Virtual method to be overridden by the user. It is called when the export starts and provides all information about the export. */
+		/** Virtual method to be overridden by the user. It is called when the export starts and provides all information about the export. `features` is the list of features for the export, `is_debug` is `true` for debug builds, `path` is the target path for the exported project. `flags` is only used when running a runnable profile, e.g. when using native run on Android. */
 		_export_begin(features: PoolStringArray, is_debug: boolean, path: string, flags: number) : void;
 
 		/** Virtual method to be overridden by the user. Called when the export is finished. */
 		_export_end() : void;
 
-		/**  */
+		/** Virtual method to be overridden by the user. Called for each exported file, providing arguments that can be used to identify the file. `path` is the path of the file, `type` is the `Resource` represented by the file (e.g. `PackedScene`) and `features` is the list of features for the export.
+
+		 Calling `skip` inside this callback will make the file not included in the export. */
 		_export_file(path: string, type: string, features: PoolStringArray) : void;
 
-		/**  */
+		/** Adds a shared object with the given `tags` and destination `path`. */
 		add_shared_object(path: string, tags: PoolStringArray) : void;
 
-		/**  */
+		/** Adds a static lib from the given `path` to the iOS project. */
 		add_ios_project_static_lib(path: string) : void;
 
-		/**  */
+		/** Adds a custom file to be exported. `path` is the virtual path that can be used to load the file, `file` is the binary data of the file. If `remap` is `true`, file will not be exported, but instead remapped to the given `path`. */
 		add_file(path: string, file: PoolByteArray, remap: boolean) : void;
 
 		/** Adds a static library (*.a) or dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project. */
@@ -19021,19 +19346,19 @@ declare module godot {
 		 This method should not be used for System libraries as they are already present on the device. */
 		add_ios_embedded_framework(path: string) : void;
 
-		/**  */
+		/** Adds content for iOS Property List files. */
 		add_ios_plist_content(plist_content: string) : void;
 
-		/**  */
+		/** Adds linker flags for the iOS export. */
 		add_ios_linker_flags(flags: string) : void;
 
-		/**  */
+		/** Adds an iOS bundle file from the given `path` to the exported project. */
 		add_ios_bundle_file(path: string) : void;
 
-		/**  */
+		/** Adds a C++ code to the iOS export. The final code is created from the code appended by each active export plugin. */
 		add_ios_cpp_code(code: string) : void;
 
-		/**  */
+		/** To be called inside `_export_file`. Skips the current file, so it's not included in the export. */
 		skip() : void;
 	}
 	namespace EditorExportPlugin {
@@ -19420,7 +19745,7 @@ declare module godot {
 	     return "my.special.plugin"
 	 
 	 func get_visible_name():
-	     return "Special Mesh Importer"
+	     return "Special Mesh"
 	 
 	 func get_recognized_extensions():
 	     return ["special", "spec"]
@@ -19449,8 +19774,7 @@ declare module godot {
 	     # Fill the Mesh with data read in "file", left as an exercise to the reader
 	 
 	     var filename = save_path + "." + get_save_extension()
-	     ResourceSaver.save(filename, mesh)
-	     return OK
+	     return ResourceSaver.save(filename, mesh)
 	 ``` */
 	class EditorImportPlugin extends ResourceImporter {
 
@@ -19495,7 +19819,7 @@ declare module godot {
 		/** Gets the extension used to save this resource in the `.import` directory. */
 		get_save_extension() : string;
 
-		/** Gets the name to display in the import window. */
+		/** Gets the name to display in the import window. You should choose this name as a continuation to "Import as", e.g. "Import as Special Mesh". */
 		get_visible_name() : string;
 
 		/** Imports `source_file` into `save_path` with the import `options` specified. The `platform_variants` and `gen_files` arrays will be modified by this function.
@@ -19958,7 +20282,7 @@ declare module godot {
 		/**  */
 		remove_scene_import_plugin(scene_importer: EditorSceneImporter) : void;
 
-		/**  */
+		/** Registers a new export plugin. Export plugins are used when the project is being exported. See `EditorExportPlugin` for more information. */
 		add_export_plugin(plugin: EditorExportPlugin) : void;
 
 		/**  */
@@ -22006,9 +22330,11 @@ declare module godot {
 	 **Note:** To access project resources once exported, it is recommended to use `ResourceLoader` instead of the `File` API, as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package. */
 	class File extends Reference {
 
-		/** If `true`, the file's endianness is swapped. Use this if you're dealing with files written on big-endian machines.
+		/** If `true`, the file is read with big-endian `url=https://en.wikipedia.org/wiki/Endianness`endianness`/url`. If `false`, the file is read with little-endian endianness. If in doubt, leave this to `false` as most files are written with little-endian endianness.
 
-		 **Note:** This is about the file format, not CPU type. This is always reset to `false` whenever you open the file. */
+		 **Note:** `endian_swap` is only about the file format, not the CPU type. The CPU endianness doesn't affect the default endianness for files written.
+
+		 **Note:** This is always reset to `false` whenever you open the file. Therefore, you must set `endian_swap` *after* opening the file, not before. */
 		endian_swap: boolean;
 
 		/** Opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
@@ -22687,7 +23013,9 @@ declare module godot {
 	/** Real-time global illumination (GI) probe.
 	 `GIProbe`s are used to provide high-quality real-time indirect light to scenes. They precompute the effect of objects that emit light and the effect of static geometry to simulate the behavior of complex light in real-time. `GIProbe`s need to be baked before using, however, once baked, dynamic objects will receive light from them. Further, lights can be fully dynamic or baked.
 
-	 Having `GIProbe`s in a scene can be expensive, the quality of the probe can be turned down in exchange for better performance in the `ProjectSettings` using `ProjectSettings.rendering/quality/voxel_cone_tracing/high_quality`. */
+	 Having `GIProbe`s in a scene can be expensive, the quality of the probe can be turned down in exchange for better performance in the `ProjectSettings` using `ProjectSettings.rendering/quality/voxel_cone_tracing/high_quality`.
+
+	 **Note:** Due to a renderer limitation, emissive `ShaderMaterial`s cannot emit light when used in a `GIProbe`. Only emissive `SpatialMaterial`s can emit light in a `GIProbe`. */
 	class GIProbe extends VisualInstance {
 
 		/** Number of times to subdivide the grid that the `GIProbe` operates on. A higher number results in finer detail and thus higher visual quality, while lower numbers result in better performance. */
@@ -23909,7 +24237,7 @@ declare module godot {
 		 **Note:** The lines are specified using direction vectors, not end points. */
 		static line_intersects_line_2d(from_a: Vector2, dir_a: Vector2, from_b: Vector2, dir_b: Vector2) : any;
 
-		/** Given the two 2D segments (`p1`, `p2`) and (`q1`, `q2`), finds those two points on the two segments that are closest to each other. Returns a `PoolVector2Array` that contains this point on (`p1`, `p2`) as well the accompanying point on (`q1`, `q2`). */
+		/** Given the two 2D segments (`p1`, `q1`) and (`p2`, `q2`), finds those two points on the two segments that are closest to each other. Returns a `PoolVector2Array` that contains this point on (`p1`, `q1`) as well the accompanying point on (`p2`, `q2`). */
 		static get_closest_points_between_segments_2d(p1: Vector2, q1: Vector2, p2: Vector2, q2: Vector2) : PoolVector2Array;
 
 		/** Given the two 3D segments (`p1`, `p2`) and (`q1`, `q2`), finds those two points on the two segments that are closest to each other. Returns a `PoolVector3Array` that contains this point on (`p1`, `p2`) as well the accompanying point on (`q1`, `q2`). */
@@ -24109,6 +24437,12 @@ declare module godot {
 		/** If `true`, this GeometryInstance will be used when baking lights using a `GIProbe` or `BakedLightmap`. */
 		use_in_baked_light: boolean;
 
+		/** When disabled, the mesh will be taken into account when computing indirect lighting, but the resulting lightmap will not be saved. Useful for emissive only materials or shadow casters. */
+		generate_lightmap: boolean;
+
+		/** Scale factor for the generated baked lightmap. Useful for adding detail to certain mesh instances. */
+		lightmap_scale: number;
+
 		/** The GeometryInstance's min LOD distance.
 
 		 **Note:** This property currently has no effect. */
@@ -24162,6 +24496,18 @@ declare module godot {
 		/** Setter of `use_in_baked_light` property */
 		set_flag(p_value: boolean) : void;
 
+		/** Getter of `generate_lightmap` property */
+		get_generate_lightmap() : boolean;
+
+		/** Setter of `generate_lightmap` property */
+		set_generate_lightmap(p_value: boolean) : void;
+
+		/** Getter of `lightmap_scale` property */
+		get_lightmap_scale() : number;
+
+		/** Setter of `lightmap_scale` property */
+		set_lightmap_scale(p_value: number) : void;
+
 		/** Getter of `lod_min_distance` property */
 		get_lod_min_distance() : number;
 
@@ -24195,6 +24541,18 @@ declare module godot {
 			/** Represents the size of the `Flags` enum. */
 			FLAG_MAX = 2,
 		}
+		enum LightmapScale {
+			/** The generated lightmap texture will have the original size. */
+			LIGHTMAP_SCALE_1X = 0,
+			/** The generated lightmap texture will be twice as large, on each axis. */
+			LIGHTMAP_SCALE_2X = 1,
+			/** The generated lightmap texture will be 4 times as large, on each axis. */
+			LIGHTMAP_SCALE_4X = 2,
+			/** The generated lightmap texture will be 8 times as large, on each axis. */
+			LIGHTMAP_SCALE_8X = 3,
+			/**  */
+			LIGHTMAP_SCALE_MAX = 4,
+		}
 		enum ShadowCastingSetting {
 			/** Will not cast any shadows. */
 			SHADOW_CASTING_SETTING_OFF = 0,
@@ -24211,6 +24569,21 @@ declare module godot {
 			 In other words, the actual mesh will not be visible, only the shadows casted from the mesh will be. */
 			SHADOW_CASTING_SETTING_SHADOWS_ONLY = 3,
 		}
+
+		/** The generated lightmap texture will have the original size. */
+		const LIGHTMAP_SCALE_1X: LightmapScale.LIGHTMAP_SCALE_1X;
+
+		/** The generated lightmap texture will be twice as large, on each axis. */
+		const LIGHTMAP_SCALE_2X: LightmapScale.LIGHTMAP_SCALE_2X;
+
+		/** The generated lightmap texture will be 4 times as large, on each axis. */
+		const LIGHTMAP_SCALE_4X: LightmapScale.LIGHTMAP_SCALE_4X;
+
+		/** The generated lightmap texture will be 8 times as large, on each axis. */
+		const LIGHTMAP_SCALE_8X: LightmapScale.LIGHTMAP_SCALE_8X;
+
+		/**  */
+		const LIGHTMAP_SCALE_MAX: LightmapScale.LIGHTMAP_SCALE_MAX;
 
 		/** Will not cast any shadows. */
 		const SHADOW_CASTING_SETTING_OFF: ShadowCastingSetting.SHADOW_CASTING_SETTING_OFF;
@@ -24253,8 +24626,8 @@ declare module godot {
 		/** Adds the specified color to the end of the ramp, with the specified offset. */
 		add_point(offset: number, color: Color) : void;
 
-		/** Removes the color at the index `offset`. */
-		remove_point(offset: number) : void;
+		/** Removes the color at the index `point`. */
+		remove_point(point: number) : void;
 
 		/** Sets the offset for the ramp color at index `point`. */
 		set_offset(point: number, offset: number) : void;
@@ -24334,6 +24707,15 @@ declare module godot {
 
 		/** The current zoom value. */
 		zoom: number;
+
+		/** If `true`, the minimap is visible. */
+		minimap_enabled: boolean;
+
+		/** The size of the minimap rectangle. The map itself is based on the size of the grid area and is scaled to fit this rectangle. */
+		minimap_size: Vector2;
+
+		/** The opacity of the minimap rectangle. */
+		minimap_opacity: number;
 
 		/**  */
 		rect_clip_content: boolean;
@@ -24417,6 +24799,24 @@ declare module godot {
 
 		/** Setter of `zoom` property */
 		set_zoom(p_value: number) : void;
+
+		/** Getter of `minimap_enabled` property */
+		is_minimap_enabled() : boolean;
+
+		/** Setter of `minimap_enabled` property */
+		set_minimap_enabled(p_value: boolean) : void;
+
+		/** Getter of `minimap_size` property */
+		get_minimap_size() : Vector2;
+
+		/** Setter of `minimap_size` property */
+		set_minimap_size(p_value: Vector2) : void;
+
+		/** Getter of `minimap_opacity` property */
+		get_minimap_opacity() : number;
+
+		/** Setter of `minimap_opacity` property */
+		set_minimap_opacity(p_value: number) : void;
 
 		/** Getter of `rect_clip_content` property */
 		is_clipping_contents() : boolean;
@@ -24625,6 +25025,9 @@ declare module godot {
 		/** Emitted when the GraphNode is dragged. */
 		const dragged: 'dragged';
 
+		/** Emitted when any GraphNode's slot is updated. */
+		const slot_updated: 'slot_updated';
+
 		/** Emitted when the GraphNode is moved. */
 		const offset_changed: 'offset_changed';
 
@@ -24685,7 +25088,9 @@ declare module godot {
 
 	 A GridMap contains a collection of cells. Each grid cell refers to a tile in the `MeshLibrary`. All cells in the map have the same dimensions.
 
-	 Internally, a GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells. */
+	 Internally, a GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
+
+	 **Note:** GridMap doesn't extend `VisualInstance` and therefore can't be hidden or cull masked based on `VisualInstance.layers`. If you make a light not affect the first layer, the whole GridMap won't be lit by the light in question. */
 	class GridMap extends Spatial {
 
 		/** The assigned `MeshLibrary`. */
@@ -25772,8 +26177,8 @@ declare module godot {
 	namespace HeightMapShape {
 	}
 
-	/** A hinge between two 3D bodies.
-	 A HingeJoint normally uses the Z axis of body A as the hinge axis, another axis can be specified when adding it manually though. */
+	/** A hinge between two 3D PhysicsBodies.
+	 A HingeJoint normally uses the Z axis of body A as the hinge axis, another axis can be specified when adding it manually though. See also `Generic6DOFJoint`. */
 	class HingeJoint extends Joint {
 
 		/** The speed with which the two bodies get pulled together when they move in different directions. */
@@ -26075,11 +26480,11 @@ declare module godot {
 		/** Returns the offset where the image's mipmap with index `mipmap` is stored in the `data` dictionary. */
 		get_mipmap_offset(mipmap: number) : number;
 
-		/** Resizes the image to the nearest power of 2 for the width and height. If `square` is `true` then set width and height to be the same. */
+		/** Resizes the image to the nearest power of 2 for the width and height. If `square` is `true` then set width and height to be the same. New pixels are calculated using the `interpolation` mode defined via `Interpolation` constants. */
 		//@ts-ignore
-		resize_to_po2(square: boolean = false) : void;
+		resize_to_po2(square: boolean = false, interpolation: Image.Interpolation = 1) : void;
 
-		/** Resizes the image to the given `width` and `height`. New pixels are calculated using `interpolation`. See `interpolation` constants. */
+		/** Resizes the image to the given `width` and `height`. New pixels are calculated using the `interpolation` mode defined via `Interpolation` constants. */
 		//@ts-ignore
 		resize(width: number, height: number, interpolation: Image.Interpolation = 1) : void;
 
@@ -30144,7 +30549,7 @@ declare module godot {
 		/** Deprecated callback, does not do anything. Use `_input_event` to parse text input. Will be removed in Godot 4.0. */
 		_input_text(text: string) : void;
 
-		/** Called each physics frame with the time since the last physics frame as argument (in seconds). Equivalent to `Node._physics_process`.
+		/** Called each physics frame with the time since the last physics frame as argument (`delta`, in seconds). Equivalent to `Node._physics_process`.
 
 		 If implemented, the method must return a boolean value. `true` ends the main loop, while `false` lets it proceed to the next frame. */
 		_iteration(delta: number) : boolean;
@@ -30391,7 +30796,7 @@ declare module godot {
 	 Mesh is a type of `Resource` that contains vertex array-based geometry, divided in *surfaces*. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials. */
 	class Mesh extends Resource {
 
-		/** Sets a hint to be used for lightmap resolution in `BakedLightmap`. Overrides `BakedLightmap.bake_default_texels_per_unit`. */
+		/** Sets a hint to be used for lightmap resolution in `BakedLightmap`. Overrides `BakedLightmap.default_texels_per_unit`. */
 		lightmap_size_hint: Vector2;
 
 		/** Returns the smallest `AABB` enclosing this mesh in local space. Not affected by `custom_aabb`. See also `VisualInstance.get_transformed_aabb`.
@@ -31316,11 +31721,13 @@ declare module godot {
 	}
 
 	/** High-level multiplayer API.
-	 This class implements most of the logic behind the high-level multiplayer API.
+	 This class implements most of the logic behind the high-level multiplayer API. See also `NetworkedMultiplayerPeer`.
 
 	 By default, `SceneTree` has a reference to this class that is used to provide multiplayer capabilities (i.e. RPC/RSET) across the whole scene.
 
-	 It is possible to override the MultiplayerAPI instance used by specific Nodes by setting the `Node.custom_multiplayer` property, effectively allowing to run both client and server in the same scene. */
+	 It is possible to override the MultiplayerAPI instance used by specific Nodes by setting the `Node.custom_multiplayer` property, effectively allowing to run both client and server in the same scene.
+
+	 **Note:** The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice. */
 	class MultiplayerAPI extends Reference {
 
 		/** If `true` (or if the `network_peer` has `PacketPeer.allow_object_decoding` set to `true`), the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
@@ -31959,7 +32366,11 @@ declare module godot {
 	}
 
 	/** PacketPeer implementation using the `url=http://enet.bespin.org/index.html`ENet`/url` library.
-	 A PacketPeer implementation that should be passed to `SceneTree.network_peer` after being initialized as either a client or server. Events can then be handled by connecting to `SceneTree` signals. */
+	 A PacketPeer implementation that should be passed to `SceneTree.network_peer` after being initialized as either a client or server. Events can then be handled by connecting to `SceneTree` signals.
+
+	 ENet's purpose is to provide a relatively thin, simple and robust network communication layer on top of UDP (User Datagram Protocol).
+
+	 **Note:** ENet only uses UDP, not TCP. When forwarding the server port to make your server accessible on the public Internet, you only need to forward the server port in UDP. You can use the `UPNP` class to try to forward the server port automatically when starting the server. */
 	class NetworkedMultiplayerENet extends NetworkedMultiplayerPeer {
 
 		/** The compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all. */
@@ -32113,7 +32524,9 @@ declare module godot {
 	}
 
 	/** A high-level network interface to simplify multiplayer interactions.
-	 Manages the connection to network peers. Assigns unique IDs to each client connected to the server. */
+	 Manages the connection to network peers. Assigns unique IDs to each client connected to the server. See also `MultiplayerAPI`.
+
+	 **Note:** The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice. */
 	class NetworkedMultiplayerPeer extends PacketPeer {
 
 		/** If `true`, this `NetworkedMultiplayerPeer` refuses new connections. */
@@ -32351,7 +32764,7 @@ declare module godot {
 
 	 This means that when adding a node to the scene tree, the following order will be used for the callbacks: `_enter_tree` of the parent, `_enter_tree` of the children, `_ready` of the children and finally `_ready` of the parent (recursively for the entire scene tree).
 
-	 **Processing:** Nodes can override the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback `_process`, toggled with `set_process`) happens as fast as possible and is dependent on the frame rate, so the processing time *delta* is passed as an argument. Physics processing (callback `_physics_process`, toggled with `set_physics_process`) happens a fixed number of times per second (60 by default) and is useful for code related to the physics engine.
+	 **Processing:** Nodes can override the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback `_process`, toggled with `set_process`) happens as fast as possible and is dependent on the frame rate, so the processing time *delta* (in seconds) is passed as an argument. Physics processing (callback `_physics_process`, toggled with `set_physics_process`) happens a fixed number of times per second (60 by default) and is useful for code related to the physics engine.
 
 	 Nodes can also process input events. When present, the `_input` function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the `_unhandled_input` function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI `Control` nodes), ensuring that the node only receives the events that were meant for it.
 
@@ -32415,7 +32828,7 @@ declare module godot {
 		 **Note:** This method is only called if the node is present in the scene tree (i.e. if it's not orphan). */
 		_input(event: InputEvent) : void;
 
-		/** Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the `delta` variable should be constant.
+		/** Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the `delta` variable should be constant. `delta` is in seconds.
 
 		 It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with `set_physics_process`.
 
@@ -32424,7 +32837,7 @@ declare module godot {
 		 **Note:** This method is only called if the node is present in the scene tree (i.e. if it's not orphan). */
 		_physics_process(delta: number) : void;
 
-		/** Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the `delta` time since the previous frame is not constant.
+		/** Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the `delta` time since the previous frame is not constant. `delta` is in seconds.
 
 		 It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with `set_process`.
 
@@ -32602,7 +33015,7 @@ declare module godot {
 		/** Returns an array listing the groups that the node is a member of. */
 		get_groups() : any[];
 
-		/** Moves this node to the bottom of parent node's children hierarchy. This is often useful in GUIs (`Control` nodes), because their order of drawing depends on their order in the tree, i.e. the further they are on the node list, the higher they are drawn. After using `raise`, a Control will be drawn on top of their siblings. */
+		/** Moves this node to the bottom of parent node's children hierarchy. This is often useful in GUIs (`Control` nodes), because their order of drawing depends on their order in the tree. The top Node is drawn first, then any siblings below the top Node in the hierarchy are successively drawn on top of it. After using `raise`, a Control will be drawn on top of its siblings. */
 		raise() : void;
 
 		/** Removes a node and sets all its children as children of the parent node (if it exists). All event subscriptions that pass by the removed node will be unsubscribed. */
@@ -32649,7 +33062,7 @@ declare module godot {
 		/** Enables or disables physics (i.e. fixed framerate) processing. When a node is being processed, it will receive a `NOTIFICATION_PHYSICS_PROCESS` at a fixed (usually 60 FPS, see `Engine.iterations_per_second` to change) interval (and the `_physics_process` callback will be called if exists). Enabled automatically if `_physics_process` is overridden. Any calls to this before `_ready` will be ignored. */
 		set_physics_process(enable: boolean) : void;
 
-		/** Returns the time elapsed since the last physics-bound frame (see `_physics_process`). This is always a constant value in physics processing unless the frames per second is changed via `Engine.iterations_per_second`. */
+		/** Returns the time elapsed (in seconds) since the last physics-bound frame (see `_physics_process`). This is always a constant value in physics processing unless the frames per second is changed via `Engine.iterations_per_second`. */
 		get_physics_process_delta_time() : number;
 
 		/** Returns `true` if physics processing is enabled (see `set_physics_process`). */
@@ -33629,7 +34042,9 @@ declare module godot {
 		/** Returns the current time zone as a dictionary with the keys: bias and name. */
 		static get_time_zone_info() : object;
 
-		/** Returns the current UNIX epoch timestamp. */
+		/** Returns the current UNIX epoch timestamp.
+
+		 **Important:** This is the system clock that the user can manully set. **Never use** this method for precise time calculation since its results are also subject to automatic adjustments by the operating system. **Always use** `get_ticks_usec` or `get_ticks_msec` for precise time calculation instead, since they are guaranteed to be monotonic (i.e. never decrease). */
 		static get_unix_time() : number;
 
 		/** Gets a dictionary of time values corresponding to the given UNIX epoch time (in seconds).
@@ -33861,6 +34276,11 @@ declare module godot {
 
 		/** Sets the name of the current thread. */
 		static set_thread_name(name: string) : number;
+
+		/** Returns the ID of the current thread. This can be used in logs to ease debugging of multi-threaded applications.
+
+		 **Note:** Thread IDs are not deterministic and may be reused across application restarts. */
+		static get_thread_caller_id() : number;
 
 		/** Returns `true` if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the `url=https://docs.godotengine.org/en/3.2/getting_started/workflow/export/feature_tags.html`Feature Tags`/url` documentation for more details.
 
@@ -34347,7 +34767,9 @@ declare module godot {
 
 	 Objects also receive notifications. Notifications are a simple way to notify the object about different events, so they can all be handled together. See `_notification`.
 
-	 **Note:** Unlike references to a `Reference`, references to an Object stored in a variable can become invalid without warning. Therefore, it's recommended to use `Reference` for data classes instead of `Object`. */
+	 **Note:** Unlike references to a `Reference`, references to an Object stored in a variable can become invalid without warning. Therefore, it's recommended to use `Reference` for data classes instead of `Object`.
+
+	 **Note:** Due to a bug, you can't create a "plain" Object using `Object.new()`. Instead, use `ClassDB.instance("Object")`. This bug only applies to Object itself, not any of its descendents like `Reference`. */
 	class Object {
 
 		/** Virtual method which can be overridden to customize the return value of `get`.
@@ -34792,10 +35214,10 @@ declare module godot {
 		/** Difference in period between `octaves`. */
 		lacunarity: number;
 
-		/** Generate a noise image with the requested `width` and `height`, based on the current noise parameters. */
+		/** Generate a noise image in `Image.FORMAT_L8` format with the requested `width` and `height`, based on the current noise parameters. */
 		get_image(width: number, height: number) : Image;
 
-		/** Generate a tileable noise image, based on the current noise parameters. Generated seamless images are always square (`size` × `size`). */
+		/** Generate a tileable noise image in `Image.FORMAT_L8` format, based on the current noise parameters. Generated seamless images are always square (`size` × `size`). */
 		get_seamless_image(size: number) : Image;
 
 		/** Returns the 1D noise value ``-1,1`` at the given x-coordinate.
@@ -35041,7 +35463,7 @@ declare module godot {
 	/** An abstraction of a serialized scene.
 	 A simplified interface to a scene file. Provides access to operations and checks that can be performed on the scene resource itself.
 
-	 Can be used to save a node to a file. When saving, the node as well as all the node it owns get saved (see `owner` property on `Node`).
+	 Can be used to save a node to a file. When saving, the node as well as all the nodes it owns get saved (see `owner` property on `Node`).
 
 	 **Note:** The node doesn't need to own itself.
 
@@ -35488,10 +35910,14 @@ declare module godot {
 	namespace ParallaxLayer {
 	}
 
-	/** 3D particle emitter.
+	/** GPU-based 3D particle emitter.
 	 3D particle node used to create a variety of particle systems and effects. `Particles` features an emitter that generates some number of particles at a given rate.
 
-	 Use the `process_material` property to add a `ParticlesMaterial` to configure particle appearance and behavior. Alternatively, you can add a `ShaderMaterial` which will be applied to all particles. */
+	 Use the `process_material` property to add a `ParticlesMaterial` to configure particle appearance and behavior. Alternatively, you can add a `ShaderMaterial` which will be applied to all particles.
+
+	 **Note:** `Particles` only work when using the GLES3 renderer. If using the GLES2 renderer, use `CPUParticles` instead. You can convert `Particles` to `CPUParticles` by selecting the node, clicking the **Particles** menu at the top of the 3D editor viewport then choosing **Convert to CPUParticles**.
+
+	 **Note:** After working on a Particles node, remember to update its `visibility_aabb` by selecting it, clicking the **Particles** menu at the top of the 3D editor viewport then choose **Generate Visibility AABB**. Otherwise, particles may suddenly disappear depending on the camera position and angle. */
 	class Particles extends GeometryInstance {
 
 		/** If `true`, particles are being emitted. */
@@ -35526,7 +35952,9 @@ declare module godot {
 		/** If `true`, results in fractional delta calculation which has a smoother particles display effect. */
 		fract_delta: boolean;
 
-		/** The `AABB` that determines the area of the world part of which needs to be visible on screen for the particle system to be active.
+		/** The `AABB` that determines the node's region which needs to be visible on screen for the particle system to be active.
+
+		 Grow the box if particles suddenly appear/disappear when the node enters/exits the screen. The `AABB` can be grown via code or with the **Particles → Generate AABB** editor tool.
 
 		 **Note:** If the `ParticlesMaterial` in use is configured to cast shadows, you may want to enlarge this AABB to ensure the shadow is updated when particles are off-screen. */
 		visibility_aabb: AABB;
@@ -35704,10 +36132,16 @@ declare module godot {
 		const MAX_DRAW_PASSES: 4;
 	}
 
-	/** 2D particle emitter.
+	/** GPU-based 2D particle emitter.
 	 2D particle node used to create a variety of particle systems and effects. `Particles2D` features an emitter that generates some number of particles at a given rate.
 
-	 Use the `process_material` property to add a `ParticlesMaterial` to configure particle appearance and behavior. Alternatively, you can add a `ShaderMaterial` which will be applied to all particles. */
+	 Use the `process_material` property to add a `ParticlesMaterial` to configure particle appearance and behavior. Alternatively, you can add a `ShaderMaterial` which will be applied to all particles.
+
+	 **Note:** `Particles2D` only work when using the GLES3 renderer. If using the GLES2 renderer, use `CPUParticles2D` instead. You can convert `Particles2D` to `CPUParticles2D` by selecting the node, clicking the **Particles** menu at the top of the 2D editor viewport then choosing **Convert to CPUParticles2D**.
+
+	 **Note:** After working on a Particles node, remember to update its `visibility_rect` by selecting it, clicking the **Particles** menu at the top of the 2D editor viewport then choose **Generate Visibility Rect**. Otherwise, particles may suddenly disappear depending on the camera position and angle.
+
+	 **Note:** Unlike `CPUParticles2D`, `Particles2D` currently ignore the texture region defined in `AtlasTexture`s. */
 	class Particles2D extends Node2D {
 
 		/** If `true`, particles are being emitted. */
@@ -35742,7 +36176,9 @@ declare module godot {
 		/** If `true`, results in fractional delta calculation which has a smoother particles display effect. */
 		fract_delta: boolean;
 
-		/** Editor visibility helper. */
+		/** The `Rect2` that determines the node's region which needs to be visible on screen for the particle system to be active.
+
+		 Grow the rect if particles suddenly appear/disappear when the node enters/exits the screen. The `Rect2` can be grown via code or with the **Particles → Generate Visibility Rect** editor tool. */
 		visibility_rect: Rect2;
 
 		/** If `true`, particles use the parent node's coordinate space. If `false`, they use global coordinates. */
@@ -37285,9 +37721,11 @@ declare module godot {
 		//@ts-ignore
 		intersect_shape(shape: Physics2DShapeQueryParameters, max_results: number = 32) : any[];
 
-		/** Checks how far the shape can travel toward a point. If the shape can not move, the array will be empty.
+		/** Checks how far a `Shape2D` can move without colliding. All the parameters for the query, including the shape and the motion, are supplied through a `Physics2DShapeQueryParameters` object.
 
-		 **Note:** Both the shape and the motion are supplied through a `Physics2DShapeQueryParameters` object. The method will return an array with two floats between 0 and 1, both representing a fraction of `motion`. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be ``1, 1``. */
+		 Returns an array with the safe and unsafe proportions (between 0 and 1) of the motion. The safe proportion is the maximum fraction of the motion that can be made without a collision. The unsafe proportion is the minimum fraction of the distance that must be moved for a collision. If no collision is detected a result of ``1.0, 1.0`` will be returned.
+
+		 **Note:** Any `Shape2D`s that the shape is already colliding with e.g. inside of, will be ignored. Use `collide_shape` to determine the `Shape2D`s that the shape is already colliding with. */
 		cast_motion(shape: Physics2DShapeQueryParameters) : any[];
 
 		/** Checks the intersections of a shape, given through a `Physics2DShapeQueryParameters` object, against the space. The resulting array contains a list of points where the shape intersects another. Like with `intersect_shape`, the number of returned results can be limited to save processing time. */
@@ -38468,9 +38906,11 @@ declare module godot {
 		//@ts-ignore
 		intersect_shape(shape: PhysicsShapeQueryParameters, max_results: number = 32) : any[];
 
-		/** Checks whether the shape can travel to a point. The method will return an array with two floats between 0 and 1, both representing a fraction of `motion`. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be ``1, 1``.
+		/** Checks how far a `Shape` can move without colliding. All the parameters for the query, including the shape, are supplied through a `PhysicsShapeQueryParameters` object.
 
-		 If the shape can not move, the returned array will be ``0, 0`` under Bullet, and empty under GodotPhysics. */
+		 Returns an array with the safe and unsafe proportions (between 0 and 1) of the motion. The safe proportion is the maximum fraction of the motion that can be made without a collision. The unsafe proportion is the minimum fraction of the distance that must be moved for a collision. If no collision is detected a result of ``1.0, 1.0`` will be returned.
+
+		 **Note:** Any `Shape`s that the shape is already colliding with e.g. inside of, will be ignored. Use `collide_shape` to determine the `Shape`s that the shape is already colliding with. */
 		cast_motion(shape: PhysicsShapeQueryParameters, motion: Vector3) : any[];
 
 		/** Checks the intersections of a shape, given through a `PhysicsShapeQueryParameters` object, against the space. The resulting array contains a list of points where the shape intersects another. Like with `intersect_shape`, the number of returned results can be limited to save processing time. */
@@ -39690,8 +40130,8 @@ declare module godot {
 	namespace PhysicsShapeQueryResult {
 	}
 
-	/** Pin joint for 3D shapes.
-	 Pin joint for 3D rigid bodies. It pins 2 bodies (rigid or static) together. */
+	/** Pin joint for 3D PhysicsBodies.
+	 Pin joint for 3D rigid bodies. It pins 2 bodies (rigid or static) together. See also `Generic6DOFJoint`. */
 	class PinJoint extends Joint {
 
 		/** The force with which the pinned objects stay in positional relation to each other. The higher, the stronger. */
@@ -39764,7 +40204,9 @@ declare module godot {
 	}
 
 	/** Class representing a planar `PrimitiveMesh`.
-	 Class representing a planar `PrimitiveMesh`. This flat mesh does not have a thickness. By default, this mesh is aligned on the X and Z axes; this default rotation isn't suited for use with billboarded materials. For billboarded materials, use `QuadMesh` instead. */
+	 Class representing a planar `PrimitiveMesh`. This flat mesh does not have a thickness. By default, this mesh is aligned on the X and Z axes; this default rotation isn't suited for use with billboarded materials. For billboarded materials, use `QuadMesh` instead.
+
+	 **Note:** When using a large textured `PlaneMesh` (e.g. as a floor), you may stumble upon UV jittering issues depending on the camera angle. To solve this, increase `subdivide_depth` and `subdivide_width` until you no longer notice UV jittering. */
 	class PlaneMesh extends PrimitiveMesh {
 
 		/** Size of the generated plane. */
@@ -40354,11 +40796,11 @@ declare module godot {
 		 **Note:** The indices of items after the removed item will be shifted by one. */
 		remove_item(idx: number) : void;
 
-		/** Adds a separator between items. Separators also occupy an index.
+		/** Adds a separator between items. Separators also occupy an index, which you can set by using the `id` parameter.
 
 		 A `label` can optionally be provided, which will appear at the center of the separator. */
 		//@ts-ignore
-		add_separator(label: string = "") : void;
+		add_separator(label: string = "", id: number = -1) : void;
 
 		/** Removes all items from the `PopupMenu`. */
 		clear() : void;
@@ -40927,7 +41369,7 @@ declare module godot {
 		/** If `true`, logs all output to files. */
 		static 'logging/file_logging/enable_file_logging': boolean;
 
-		/**  */
+		/** Desktop override for `logging/file_logging/enable_file_logging`, as log files are not readily accessible on mobile/Web platforms. */
 		static 'logging/file_logging/enable_file_logging.pc': boolean;
 
 		/** Path to logs within the project. Using an `user://` path is recommended. */
@@ -41021,6 +41463,9 @@ declare module godot {
 		 Can help prevent unwanted relative movement in pixel art styles. */
 		static 'rendering/quality/2d/use_transform_snap': boolean;
 
+		/**  */
+		static 'rendering/quality/2d/use_camera_snap': boolean;
+
 		/** If `true`, keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms. */
 		static 'display/window/energy_saving/keep_screen_on': boolean;
 
@@ -41050,6 +41495,15 @@ declare module godot {
 		 This setting is therefore mostly relevant for lowering the maximum FPS below VSync, e.g. to perform non real-time rendering of static frames, or test the project under lag conditions. */
 		static 'debug/settings/fps/force_fps': number;
 
+		/** If enabled, 2D and 3D physics picking behaves this way in relation to pause:
+
+		 - When pause is started, every collision object that is hovered or captured (3D only) is released from that condition, getting the relevant mouse-exit callback, unless its pause mode makes it immune to pause.
+
+		 - During pause, picking only considers collision objects immune to pause, sending input events and enter/exit callbacks to them as expected.
+
+		 If disabled, the legacy behavior is used, which consists in queuing the picking input events during pause (so nodes won't get them) and flushing that queue on resume, against the state of the 2D/3D world at that point. */
+		static 'physics/common/enable_pause_aware_picking': boolean;
+
 		/** Print frames per second to standard output every second. */
 		static 'debug/settings/stdout/print_fps': boolean;
 
@@ -41073,9 +41527,6 @@ declare module godot {
 
 		/** Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here. */
 		static 'memory/limits/message_queue/max_size_kb': number;
-
-		/** Maximum anisotropic filter level used for textures with anisotropy enabled. Higher values will result in sharper textures when viewed from oblique angles, at the cost of performance. Only power-of-two values are valid (2, 4, 8, 16). */
-		static 'rendering/quality/filters/anisotropic_filter_level': number;
 
 		/** If `true`, the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the GLES3 renderer. */
 		static 'rendering/vram_compression/import_bptc': boolean;
@@ -41166,6 +41617,9 @@ declare module godot {
 		/** Disables depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this. */
 		static 'rendering/quality/depth_prepass/disable_for_vendors': string;
 
+		/** Maximum anisotropic filter level used for textures with anisotropy enabled. Higher values will result in sharper textures when viewed from oblique angles, at the cost of performance. Only power-of-two values are valid (2, 4, 8, 16). */
+		static 'rendering/quality/filters/anisotropic_filter_level': number;
+
 		/** If `true`, uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If `false`, linear mipmap filtering (also called "trilinear filtering") is used. */
 		static 'rendering/quality/filters/use_nearest_mipmap_filter': boolean;
 
@@ -41197,18 +41651,6 @@ declare module godot {
 
 		 Not available in GLES3 when `rendering/batching/options/use_batching` is off. */
 		static 'rendering/quality/2d/ninepatch_mode': number;
-
-		/**  */
-		static 'rendering/options/api_usage_batching/send_null': boolean;
-
-		/**  */
-		static 'rendering/options/api_usage_batching/flag_stream': boolean;
-
-		/**  */
-		static 'rendering/options/api_usage_legacy/flag_stream': boolean;
-
-		/**  */
-		static 'rendering/options/api_usage_legacy/orphan_buffers': boolean;
 
 		/** Turns batching on and off. Batching increases performance by reducing the amount of graphics API drawcalls.
 
@@ -41265,11 +41707,20 @@ declare module godot {
 		 Use the default unless correcting for a problem on particular hardware. */
 		static 'rendering/batching/precision/uv_contract_amount': number;
 
+		/** Enables the use of bounding volume hierarchy instead of octree for rendering spatial partitioning. This may give better performance. */
+		static 'rendering/quality/spatial_partitioning/use_bvh': boolean;
+
 		/**  */
 		static 'memory/limits/command_queue/multithreading_queue_size_kb': number;
 
 		/** Max buffer size for blend shapes. Any blend shape bigger than this will not work. */
 		static 'rendering/limits/buffers/blend_shape_max_buffer_size_kb': number;
+
+		/** Enable usage of bicubic sampling in baked lightmaps. This results in smoother looking lighting at the expense of more bandwidth usage. On GLES2, changes to this setting will only be applied upon restarting the application. */
+		static 'rendering/quality/lightmapping/use_bicubic_sampling': boolean;
+
+		/** Lower-end override for `rendering/quality/lightmapping/use_bicubic_sampling` on mobile devices, in order to reduce bandwidth usage. */
+		static 'rendering/quality/lightmapping/use_bicubic_sampling.mobile': boolean;
 
 		/** Max buffer size for drawing polygons. Any polygon bigger than this will not work. */
 		static 'rendering/limits/buffers/canvas_polygon_buffer_size_kb': number;
@@ -41367,6 +41818,12 @@ declare module godot {
 
 		/** If `true`, sends mouse input events when tapping or swiping on the touchscreen. */
 		static 'input_devices/pointing/emulate_mouse_from_touch': boolean;
+
+		/** If non-empty, this locale will be used when running the project from the editor. */
+		static 'locale/test': string;
+
+		/** The locale to fall back to if a translation isn't available in a given language. If left empty, `en` (English) will be used. */
+		static 'locale/fallback': string;
 
 		/** What to use to separate node name from number. This is mostly an editor setting. */
 		static 'node/name_num_separator': number;
@@ -41746,6 +42203,18 @@ declare module godot {
 		/** If `true`, enables warnings when calling a ternary expression that has no effect on the surrounding code, such as writing `42 if active else 0` as a statement. */
 		static 'debug/gdscript/warnings/standalone_ternary': boolean;
 
+		/** Amount of light samples taken when using `BakedLightmap.BAKE_QUALITY_LOW`. */
+		static 'rendering/cpu_lightmapper/quality/low_quality_ray_count': number;
+
+		/** Amount of light samples taken when using `BakedLightmap.BAKE_QUALITY_MEDIUM`. */
+		static 'rendering/cpu_lightmapper/quality/medium_quality_ray_count': number;
+
+		/** Amount of light samples taken when using `BakedLightmap.BAKE_QUALITY_HIGH`. */
+		static 'rendering/cpu_lightmapper/quality/high_quality_ray_count': number;
+
+		/** Amount of light samples taken when using `BakedLightmap.BAKE_QUALITY_ULTRA`. */
+		static 'rendering/cpu_lightmapper/quality/ultra_quality_ray_count': number;
+
 		/** Maximum call stack in visual scripting, to avoid infinite recursion. */
 		static 'debug/settings/visual_script/max_call_stack': number;
 
@@ -41776,6 +42245,9 @@ declare module godot {
 		/** Maximum number of concurrent output packets for `WebSocketServer`. */
 		static 'network/limits/websocket_server/max_out_packets': number;
 
+		/** Enables the use of bounding volume hierarchy instead of octree for physics spatial partitioning. This may give better performance. */
+		static 'physics/3d/godot_physics/use_bvh': boolean;
+
 		/** Sets whether physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
 
 		 **Warning:** As of Godot 3.2, there are mixed reports about the use of a Multi-Threaded thread model for physics. Be sure to assess whether it does give you extra performance and no regressions when using it. */
@@ -41786,12 +42258,6 @@ declare module godot {
 
 		/**  */
 		static 'JavaScript/debugger/port': number;
-
-		/** If non-empty, this locale will be used when running the project from the editor. */
-		static 'locale/test': string;
-
-		/** The locale to fall back to if a translation isn't available in a given language. If left empty, `en` (English) will be used. */
-		static 'locale/fallback': string;
 
 		/** Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu. */
 		static 'debug/shapes/collision/shape_color': Color;
@@ -42044,7 +42510,7 @@ declare module godot {
 		grid_radius: Vector3;
 
 		/**  */
-		broadcast(name: string, parameters: any) : void;
+		broadcast(method: string, parameters: any) : void;
 
 		/** Getter of `group_name` property */
 		get_group_name() : string;
@@ -42135,15 +42601,39 @@ declare module godot {
 	 func _ready():
 	     rng.randomize()
 	     var my_random_number = rng.randf_range(-10.0, 10.0)
-	 ``` */
+	 ```
+
+	 **Note:** The default values of `seed` and `state` properties are pseudo-random, and changes when calling `randomize`. The `0` value documented here is a placeholder, and not the actual default seed. */
 	class RandomNumberGenerator extends Reference {
 
-		/** The seed used by the random number generator. A given seed will give a reproducible sequence of pseudo-random numbers.
+		/** Initializes the random number generator state based on the given seed value. A given seed will give a reproducible sequence of pseudo-random numbers.
 
 		 **Note:** The RNG does not have an avalanche effect, and can output similar random streams given similar seeds. Consider using a hash function to improve your seed quality if they're sourced externally.
 
-		 **Note:** The default value of this property is pseudo-random, and changes when calling `randomize`. The `0` value documented here is a placeholder, and not the actual default seed. */
+		 **Note:** Setting this property produces a side effect of changing the internal `state`, so make sure to initialize the seed *before* modifying the `state`:
+
+		 ```gdscript
+		 var rng = RandomNumberGenerator.new()
+		 rng.seed = hash("Godot")
+		 rng.state = 100 # Restore to some previously saved state.
+		 ```
+
+		 **Warning:** the getter of this property returns the previous `state`, and not the initial seed value, which is going to be fixed in Godot 4.0. */
 		seed: number;
+
+		/** The current state of the random number generator. Save and restore this property to restore the generator to a previous state:
+
+		 ```gdscript
+		 var rng = RandomNumberGenerator.new()
+		 print(rng.randf())
+		 var saved_state = rng.state # Store current state.
+		 print(rng.randf()) # Advance internal state.
+		 rng.state = saved_state # Restore the state.
+		 print(rng.randf()) # Prints the same value as in previous.
+		 ```
+
+		 **Note:** Do not set state to arbitrary values, since the random number generator requires the state to have certain qualities to behave properly. It should only be set to values that came from the state property itself. To initialize the random number generator with arbitrary input, use `seed` instead. */
+		state: number;
 
 		/** Generates a pseudo-random 32-bit unsigned integer between `0` and `4294967295` (inclusive). */
 		randi() : number;
@@ -42169,6 +42659,12 @@ declare module godot {
 
 		/** Setter of `seed` property */
 		set_seed(p_value: number) : void;
+
+		/** Getter of `state` property */
+		get_state() : number;
+
+		/** Setter of `state` property */
+		set_state(p_value: number) : void;
 	}
 	namespace RandomNumberGenerator {
 	}
@@ -42581,7 +43077,7 @@ declare module godot {
 	/** Base class for reference-counted objects.
 	 Base class for any object that keeps a reference count. `Resource` and many other helper objects inherit this class.
 
-	 Unlike `Object`s, References keep an internal reference counter so that they are automatically released when no longer in use, and only then. References therefore do not need to be freed manually with `Object.free`.
+	 Unlike other `Object` types, References keep an internal reference counter so that they are automatically released when no longer in use, and only then. References therefore do not need to be freed manually with `Object.free`.
 
 	 In the vast majority of use cases, instantiating and using `Reference`-derived types is all you need to do. The methods provided in this class are only for advanced users, and can cause issues if misused.
 
@@ -42819,8 +43315,8 @@ declare module godot {
 	 var regex = RegEx.new()
 	 regex.compile("\\S+") # Negated whitespace character class.
 	 var results = []
-	 for match in regex.search_all("One  Two \n\tThree"):
-	     results.push_back(match.get_string())
+	 for result in regex.search_all("One  Two \n\tThree"):
+	     results.push_back(result.get_string())
 	 # The `results` array now contains "One", "Two", "Three".
 	 ```
 
@@ -43023,7 +43519,7 @@ declare module godot {
 	}
 
 	/** Base class for all resources.
-	 Resource is the base class for all Godot-specific resource types, serving primarily as data containers. Unlike `Object`s, they are reference-counted and freed when no longer in use. They are also cached once loaded from disk, so that any further attempts to load a resource from a given path will return the same reference (all this in contrast to a `Node`, which is not reference-counted and can be instanced from disk as many times as desired). Resources can be saved externally on disk or bundled into another object, such as a `Node` or another resource.
+	 Resource is the base class for all Godot-specific resource types, serving primarily as data containers. Since they inherit from `Reference`, resources are reference-counted and freed when no longer in use. They are also cached once loaded from disk, so that any further attempts to load a resource from a given path will return the same reference (all this in contrast to a `Node`, which is not reference-counted and can be instanced from disk as many times as desired). Resources can be saved externally on disk or bundled into another object, such as a `Node` or another resource.
 
 	 **Note:** In C#, resources will not be freed instantly after they are no longer in use. Instead, garbage collection will run periodically and will free resources that are no longer in use. This means that unused resources will linger on for a while before being removed. */
 	class Resource extends Reference {
@@ -43034,7 +43530,7 @@ declare module godot {
 		/** The path to the resource. In case it has its own file, it will return its filepath. If it's tied to the scene, it will return the scene's path, followed by the resource's index. */
 		resource_path: string;
 
-		/** The name of the resource. This is an optional identifier. */
+		/** The name of the resource. This is an optional identifier. If `resource_name` is not empty, its value will be displayed to represent the current resource in the editor inspector. For built-in scripts, the `resource_name` will be displayed as the tab name in the script editor. */
 		resource_name: string;
 
 		/** Virtual function which can be overridden to customize the behavior value of `setup_local_to_scene`. */
@@ -43053,6 +43549,19 @@ declare module godot {
 
 		 For most resources, this method performs no base logic. `ViewportTexture` performs custom logic to properly set the proxy texture and flags in the local viewport. */
 		setup_local_to_scene() : void;
+
+		/** Emits the `changed` signal.
+
+		 If external objects which depend on this resource should be updated, this method must be called manually whenever the state of this resource has changed (such as modification of properties).
+
+		 The method is equivalent to:
+
+		 ```gdscript
+		 emit_signal("changed")
+		 ```
+
+		 **Note:** This method is called automatically for built-in resources. */
+		emit_changed() : void;
 
 		/** Duplicates the resource, returning a new resource. By default, sub-resources are shared between resource copies for efficiency. This can be changed by passing `true` to the `subresources` argument which will copy the subresources.
 
@@ -43342,6 +43851,8 @@ declare module godot {
 
 	 **Note:** Assignments to `bbcode_text` clear the tag stack and reconstruct it from the property's contents. Any edits made to `bbcode_text` will erase previous edits made from other manual sources such as `append_bbcode` and the `push_*` / `pop` methods.
 
+	 **Note:** RichTextLabel doesn't support entangled BBCode tags. For example, instead of using `**bold*bold italic**italic*`, use `**bold*bold italic****italic*`.
+
 	 **Note:** Unlike `Label`, RichTextLabel doesn't have a *property* to horizontally align text to the center. Instead, enable `bbcode_enabled` and surround the text in a ``center`` tag as follows: ``center`Example`/center``. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the `fit_content_height` property. */
 	class RichTextLabel extends Control {
 
@@ -43353,7 +43864,9 @@ declare module godot {
 		 **Note:** It is unadvised to use the `+=` operator with `bbcode_text` (e.g. `bbcode_text += "some string"`) as it replaces the whole text and can cause slowdowns. Use `append_bbcode` for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call. */
 		bbcode_text: string;
 
-		/** The restricted number of characters to display in the label. If `-1`, all characters will be displayed. */
+		/** The restricted number of characters to display in the label. If `-1`, all characters will be displayed.
+
+		 **Note:** Setting this property updates `percent_visible` based on current `get_total_character_count`. */
 		visible_characters: number;
 
 		/** The range of characters to display, as a `float` between 0.0 and 1.0. When assigned an out of range value, it's the same as assigning 1.0.
@@ -44017,12 +44530,22 @@ declare module godot {
 	}
 	namespace RigidBody {
 
-		/** Emitted when a body enters into contact with this one. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. */
+		/** Emitted when a collision with another `PhysicsBody` or `GridMap` occurs. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. `GridMap`s are detected if the `MeshLibrary` has Collision `Shape`s.
+
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody` or `GridMap`. */
 		const body_entered: 'body_entered';
 
-		/** Emitted when a body enters into contact with this one. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions.
+		/** Emitted when one of this RigidBody's `Shape`s collides with another `PhysicsBody` or `GridMap`'s `Shape`s. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. `GridMap`s are detected if the `MeshLibrary` has Collision `Shape`s.
 
-			 This signal not only receives the body that collided with this one, but also its `RID` (`body_id`), the shape index from the colliding body (`body_shape`), and the shape index from this body (`local_shape`) the other body collided with. */
+			 `body_id` the `RID` of the other `PhysicsBody` or `MeshLibrary`'s `CollisionObject` used by the `PhysicsServer`.
+
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody` or `GridMap`.
+
+			 `body_shape` the index of the `Shape` of the other `PhysicsBody` or `GridMap` used by the `PhysicsServer`.
+
+			 `local_shape` the index of the `Shape` of this RigidBody used by the `PhysicsServer`.
+
+			 **Note:** Bullet physics cannot identify the shape index when using a `ConcavePolygonShape`. Don't use multiple `CollisionShape`s when using a `ConcavePolygonShape` with Bullet physics if you need shape indices. */
 		const body_shape_entered: 'body_shape_entered';
 
 		/** Emitted when the physics engine changes the body's sleeping state.
@@ -44030,12 +44553,22 @@ declare module godot {
 			 **Note:** Changing the value `sleeping` will not trigger this signal. It is only emitted if the sleeping state is changed by the physics engine or `emit_signal("sleeping_state_changed")` is used. */
 		const sleeping_state_changed: 'sleeping_state_changed';
 
-		/** Emitted when a body shape exits contact with this one. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. */
+		/** Emitted when the collision with another `PhysicsBody` or `GridMap` ends. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. `GridMap`s are detected if the `MeshLibrary` has Collision `Shape`s.
+
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody` or `GridMap`. */
 		const body_exited: 'body_exited';
 
-		/** Emitted when a body shape exits contact with this one. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions.
+		/** Emitted when the collision between one of this RigidBody's `Shape`s and another `PhysicsBody` or `GridMap`'s `Shape`s ends. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. `GridMap`s are detected if the `MeshLibrary` has Collision `Shape`s.
 
-			 This signal not only receives the body that stopped colliding with this one, but also its `RID` (`body_id`), the shape index from the colliding body (`body_shape`), and the shape index from this body (`local_shape`) the other body stopped colliding with. */
+			 `body_id` the `RID` of the other `PhysicsBody` or `MeshLibrary`'s `CollisionObject` used by the `PhysicsServer`. `GridMap`s are detected if the Meshes have `Shape`s.
+
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody` or `GridMap`.
+
+			 `body_shape` the index of the `Shape` of the other `PhysicsBody` or `GridMap` used by the `PhysicsServer`.
+
+			 `local_shape` the index of the `Shape` of this RigidBody used by the `PhysicsServer`.
+
+			 **Note:** Bullet physics cannot identify the shape index when using a `ConcavePolygonShape`. Don't use multiple `CollisionShape`s when using a `ConcavePolygonShape` with Bullet physics if you need shape indices. */
 		const body_shape_exited: 'body_shape_exited';
 		enum Mode {
 			/** Rigid body mode. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code. */
@@ -44306,10 +44839,20 @@ declare module godot {
 	}
 	namespace RigidBody2D {
 
-		/** Emitted when a body enters into contact with this one. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. */
+		/** Emitted when a collision with another `PhysicsBody2D` or `TileMap` occurs. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. `TileMap`s are detected if the `TileSet` has Collision `Shape2D`s.
+
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody2D` or `TileMap`. */
 		const body_entered: 'body_entered';
 
-		/** Emitted when a body enters into contact with this one. Reports colliding shape information. See `CollisionObject2D` for shape index information. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. */
+		/** Emitted when one of this RigidBody2D's `Shape2D`s collides with another `PhysicsBody2D` or `TileMap`'s `Shape2D`s. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. `TileMap`s are detected if the `TileSet` has Collision `Shape2D`s.
+
+			 `body_id` the `RID` of the other `PhysicsBody2D` or `TileSet`'s `CollisionObject2D` used by the `Physics2DServer`.
+
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody2D` or `TileMap`.
+
+			 `body_shape` the index of the `Shape2D` of the other `PhysicsBody2D` or `TileMap` used by the `Physics2DServer`.
+
+			 `local_shape` the index of the `Shape2D` of this RigidBody2D used by the `Physics2DServer`. */
 		const body_shape_entered: 'body_shape_entered';
 
 		/** Emitted when the physics engine changes the body's sleeping state.
@@ -44317,10 +44860,20 @@ declare module godot {
 			 **Note:** Changing the value `sleeping` will not trigger this signal. It is only emitted if the sleeping state is changed by the physics engine or `emit_signal("sleeping_state_changed")` is used. */
 		const sleeping_state_changed: 'sleeping_state_changed';
 
-		/** Emitted when a body exits contact with this one. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. */
+		/** Emitted when the collision with another `PhysicsBody2D` or `TileMap` ends. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. `TileMap`s are detected if the `TileSet` has Collision `Shape2D`s.
+
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody2D` or `TileMap`. */
 		const body_exited: 'body_exited';
 
-		/** Emitted when a body shape exits contact with this one. Reports colliding shape information. See `CollisionObject2D` for shape index information. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. */
+		/** Emitted when the collision between one of this RigidBody2D's `Shape2D`s and another `PhysicsBody2D` or `TileMap`'s `Shape2D`s ends. Requires `contact_monitor` to be set to `true` and `contacts_reported` to be set high enough to detect all the collisions. `TileMap`s are detected if the `TileSet` has Collision `Shape2D`s.
+
+			 `body_id` the `RID` of the other `PhysicsBody2D` or `TileSet`'s `CollisionObject2D` used by the `Physics2DServer`.
+
+			 `body` the `Node`, if it exists in the tree, of the other `PhysicsBody2D` or `TileMap`.
+
+			 `body_shape` the index of the `Shape2D` of the other `PhysicsBody2D` or `TileMap` used by the `Physics2DServer`.
+
+			 `local_shape` the index of the `Shape2D` of this RigidBody2D used by the `Physics2DServer`. */
 		const body_shape_exited: 'body_shape_exited';
 		enum CCDMode {
 			/** Continuous collision detection disabled. This is the fastest way to detect body collisions, but can miss small, fast-moving objects. */
@@ -44593,7 +45146,9 @@ declare module godot {
 		     print("start")
 		     yield(get_tree().create_timer(1.0), "timeout")
 		     print("end")
-		 ``` */
+		 ```
+
+		 The timer will be automatically freed after its time elapses. */
 		//@ts-ignore
 		create_timer(time_sec: number, pause_mode_process: boolean = true) : SceneTreeTimer;
 
@@ -44641,12 +45196,16 @@ declare module godot {
 
 		/** Changes the running scene to the one at the given `path`, after loading it into a `PackedScene` and creating a new instance.
 
-		 Returns `OK` on success, `ERR_CANT_OPEN` if the `path` cannot be loaded into a `PackedScene`, or `ERR_CANT_CREATE` if that scene cannot be instantiated. */
+		 Returns `OK` on success, `ERR_CANT_OPEN` if the `path` cannot be loaded into a `PackedScene`, or `ERR_CANT_CREATE` if that scene cannot be instantiated.
+
+		 **Note:** The scene change is deferred, which means that the new scene node is added on the next idle frame. You won't be able to access it immediately after the `change_scene` call. */
 		change_scene(path: string) : number;
 
 		/** Changes the running scene to a new instance of the given `PackedScene`.
 
-		 Returns `OK` on success or `ERR_CANT_CREATE` if the scene cannot be instantiated. */
+		 Returns `OK` on success or `ERR_CANT_CREATE` if the scene cannot be instantiated.
+
+		 **Note:** The scene change is deferred, which means that the new scene node is added on the next idle frame. You won't be able to access it immediately after the `change_scene_to` call. */
 		change_scene_to(packed_scene: PackedScene) : number;
 
 		/** Reloads the currently active scene.
@@ -45246,7 +45805,9 @@ declare module godot {
 	}
 
 	/** A material that uses a custom `Shader` program.
-	 A material that uses a custom `Shader` program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader. */
+	 A material that uses a custom `Shader` program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader.
+
+	 **Note:** Due to a renderer limitation, emissive `ShaderMaterial`s cannot emit light when used in a `GIProbe`. Only emissive `SpatialMaterial`s can emit light in a `GIProbe`. */
 	class ShaderMaterial extends Material {
 
 		/** The `Shader` program used to render this material. */
@@ -45768,8 +46329,8 @@ declare module godot {
 	namespace Slider {
 	}
 
-	/** Piston kind of slider between two bodies in 3D.
-	 Slides across the X axis of the pivot object. */
+	/** Slider between two PhysicsBodies in 3D.
+	 Slides across the X axis of the pivot object. See also `Generic6DOFJoint`. */
 	class SliderJoint extends Joint {
 
 		/** The maximum difference between the pivot points on their X axis before damping happens. */
@@ -46327,7 +46888,7 @@ declare module godot {
 		/** Returns whether node notifies about its local transformation changes. `Spatial` will not propagate this by default. */
 		is_local_transform_notification_enabled() : boolean;
 
-		/** Sets whether the node notifies about its global and local transformation changes. `Spatial` will not propagate this by default. */
+		/** Sets whether the node notifies about its global and local transformation changes. `Spatial` will not propagate this by default, unless it is in the editor context and it has a valid gizmo. */
 		set_notify_transform(enable: boolean) : void;
 
 		/** Returns whether the node notifies about its global and local transformation changes. `Spatial` will not propagate this by default. */
@@ -46445,7 +47006,7 @@ declare module godot {
 
 		/** Spatial nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
 
-		 In order for `NOTIFICATION_TRANSFORM_CHANGED` to work, users first need to ask for it, with `set_notify_transform`. */
+		 In order for `NOTIFICATION_TRANSFORM_CHANGED` to work, users first need to ask for it, with `set_notify_transform`. The notification is also sent if the node is in the editor context and it has a valid gizmo. */
 		const NOTIFICATION_TRANSFORM_CHANGED: 2000;
 
 		/** Spatial nodes receives this notification when they are registered to new `World` resource. */
@@ -49792,9 +50353,9 @@ declare module godot {
 		/** Removes the index array by expanding the vertex array. */
 		deindex() : void;
 
-		/** Generates normals from vertices so you do not have to do it manually. If `flip` is `true`, the resulting normals will be inverted.
+		/** Generates normals from vertices so you do not have to do it manually. If `flip` is `true`, the resulting normals will be inverted. `generate_normals` should be called *after* generating geometry and *before* committing the mesh using `commit` or `commit_to_arrays`.
 
-		 Requires the primitive type to be set to `Mesh.PRIMITIVE_TRIANGLES`. */
+		 **Note:** `generate_normals` only works if the primitive type to be set to `Mesh.PRIMITIVE_TRIANGLES`. */
 		//@ts-ignore
 		generate_normals(flip: boolean = false) : void;
 
@@ -50299,6 +50860,28 @@ declare module godot {
 
 		/** Returns the line the editing cursor is at. */
 		cursor_get_line() : number;
+
+		/** Returns `true` when the specified `line` is marked as safe. */
+		is_line_set_as_safe(line: number) : boolean;
+
+		/** If `true`, marks the `line` as safe.
+
+		 This will show the line number with the color provided in the `safe_line_number_color` theme property. */
+		set_line_as_safe(line: number, safe: boolean) : void;
+
+		/** Returns `true` when the specified `line` is bookmarked. */
+		is_line_set_as_bookmark(line: number) : boolean;
+
+		/** Bookmarks the `line` if `bookmark` is true. Deletes the bookmark if `bookmark` is false.
+
+		 Bookmarks are shown in the `breakpoint_gutter`. */
+		set_line_as_bookmark(line: number, bookmark: boolean) : void;
+
+		/** Adds or removes the breakpoint in `line`. Breakpoints are shown in the `breakpoint_gutter`. */
+		set_line_as_breakpoint(line: number, breakpoint: boolean) : void;
+
+		/** Returns `true` when the specified `line` has a breakpoint. */
+		is_line_set_as_breakpoint(line: number) : boolean;
 
 		/** Cut's the current selection. */
 		cut() : void;
@@ -51454,7 +52037,9 @@ declare module godot {
 	}
 
 	/** Node for 2D tile-based maps.
-	 Node for 2D tile-based maps. Tilemaps use a `TileSet` which contain a list of tiles (textures plus optional collision, navigation, and/or occluder shapes) which are used to create grid-based maps. */
+	 Node for 2D tile-based maps. Tilemaps use a `TileSet` which contain a list of tiles (textures plus optional collision, navigation, and/or occluder shapes) which are used to create grid-based maps.
+
+	 When doing physics queries against the tilemap, the cell coordinates are encoded as `metadata` for each detected collision shape returned by methods such as `Physics2DDirectSpaceState.intersect_shape`, `Physics2DDirectBodyState.get_contact_collider_shape_metadata`, etc. */
 	class TileMap extends Node2D {
 
 		/** The TileMap orientation mode. See `Mode` for possible values. */
@@ -51595,7 +52180,7 @@ declare module godot {
 		/** Returns a rectangle enclosing the used (non-empty) tiles of the map. */
 		get_used_rect() : Rect2;
 
-		/** Returns the global position corresponding to the given tilemap (grid-based) coordinates.
+		/** Returns the local position corresponding to the given tilemap (grid-based) coordinates.
 
 		 Optionally, the tilemap's half offset can be ignored. */
 		//@ts-ignore
@@ -52553,6 +53138,9 @@ declare module godot {
 		/** Returns the current scrolling position. */
 		get_scroll() : Vector2;
 
+		/**  */
+		scroll_to_item(item: Object) : void;
+
 		/** Getter of `columns` property */
 		get_columns() : number;
 
@@ -52743,16 +53331,16 @@ declare module godot {
 		/** Returns `true` if the given column is checked. */
 		is_checked(column: number) : boolean;
 
-		/**  */
+		/** Sets the given column's text value. */
 		set_text(column: number, text: string) : void;
 
 		/** Returns the given column's text. */
 		get_text(column: number) : string;
 
-		/**  */
+		/** Sets a string to be shown after a column's value (for example, a unit abbreviation). */
 		set_suffix(column: number, text: string) : void;
 
-		/**  */
+		/** Gets the suffix string shown after the column value. */
 		get_suffix(column: number) : string;
 
 		/** Sets the given column's icon `Texture`. */
@@ -52779,23 +53367,25 @@ declare module godot {
 		/** Returns the `Color` modulating the column's icon. */
 		get_icon_modulate(column: number) : Color;
 
-		/**  */
+		/** Sets the value of a `CELL_MODE_RANGE` column. */
 		set_range(column: number, value: number) : void;
 
-		/**  */
+		/** Returns the value of a `CELL_MODE_RANGE` column. */
 		get_range(column: number) : number;
 
-		/**  */
+		/** Sets the range of accepted values for a column. The column must be in the `CELL_MODE_RANGE` mode.
+
+		 If `expr` is `true`, the edit mode slider will use an exponential scale as with `Range.exp_edit`. */
 		//@ts-ignore
 		set_range_config(column: number, min: number, max: number, step: number, expr: boolean = false) : void;
 
-		/**  */
+		/** Returns a dictionary containing the range parameters for a given column. The keys are "min", "max", "step", and "expr". */
 		get_range_config(column: number) : object;
 
-		/**  */
+		/** Sets the metadata value for the given column, which can be retrieved later using `get_metadata`. This can be used, for example, to store a reference to the original data. */
 		set_metadata(column: number, meta: any) : void;
 
-		/**  */
+		/** Returns the metadata value that was set for the given column using `set_metadata`. */
 		get_metadata(column: number) : any;
 
 		/** Sets the given column's custom draw callback to `callback` method on `object`.
@@ -52958,7 +53548,7 @@ declare module godot {
 		enum TreeCellMode {
 			/** Cell contains a string. */
 			CELL_MODE_STRING = 0,
-			/** Cell can be checked. */
+			/** Cell contains a checkbox. */
 			CELL_MODE_CHECK = 1,
 			/** Cell contains a range. */
 			CELL_MODE_RANGE = 2,
@@ -52971,7 +53561,7 @@ declare module godot {
 		/** Cell contains a string. */
 		const CELL_MODE_STRING: TreeCellMode.CELL_MODE_STRING;
 
-		/** Cell can be checked. */
+		/** Cell contains a checkbox. */
 		const CELL_MODE_CHECK: TreeCellMode.CELL_MODE_CHECK;
 
 		/** Cell contains a range. */
@@ -54099,7 +54689,9 @@ declare module godot {
 
 	 Supported video formats are `url=https://www.webmproject.org/`WebM`/url` (`.webm`, `VideoStreamWebm`), `url=https://www.theora.org/`Ogg Theora`/url` (`.ogv`, `VideoStreamTheora`), and any format exposed via a GDNative plugin using `VideoStreamGDNative`.
 
-	 **Note:** Due to a bug, VideoPlayer does not support localization remapping yet. */
+	 **Note:** Due to a bug, VideoPlayer does not support localization remapping yet.
+
+	 **Warning:** On HTML5, video playback *will* perform poorly due to missing architecture-specific assembly optimizations, especially for VP8/VP9. */
 	class VideoPlayer extends Control {
 
 		/** The embedded audio track to play. */
@@ -54360,7 +54952,7 @@ declare module godot {
 		/** If `true`, the objects rendered by viewport become subjects of mouse picking process. */
 		physics_object_picking: boolean;
 
-		/** If `true`, the viewport will not receive input event. */
+		/** If `true`, the viewport will not receive input events. */
 		gui_disable_input: boolean;
 
 		/** If `true`, the GUI controls on the viewport will lay pixel perfectly. */
@@ -58178,7 +58770,8 @@ declare module godot {
 		static instance_set_visible(instance: RID, visible: boolean) : void;
 
 		/** Sets the lightmap to use with this instance. */
-		static instance_set_use_lightmap(instance: RID, lightmap_instance: RID, lightmap: RID) : void;
+		//@ts-ignore
+		static instance_set_use_lightmap(instance: RID, lightmap_instance: RID, lightmap: RID, lightmap_slice: number = -1, lightmap_uv_rect: Rect2 = Rect2( 0, 0, 1, 1 )) : void;
 
 		/** Sets a custom AABB to use when culling objects from the view frustum. Equivalent to `GeometryInstance.set_custom_aabb`. */
 		static instance_set_custom_aabb(instance: RID, aabb: AABB) : void;
@@ -62265,6 +62858,275 @@ declare module godot {
 
 		/** Emitted when a client disconnects. `was_clean_close` will be `true` if the connection was shutdown cleanly. */
 		const client_disconnected: 'client_disconnected';
+	}
+
+	/** AR/VR interface using WebXR.
+	 WebXR is an open standard that allows creating VR and AR applications that run in the web browser.
+
+	 As such, this interface is only available when running in an HTML5 export.
+
+	 WebXR supports a wide range of devices, from the very capable (like Valve Index, HTC Vive, Oculus Rift and Quest) down to the much less capable (like Google Cardboard, Oculus Go, GearVR, or plain smartphones).
+
+	 Since WebXR is based on Javascript, it makes extensive use of callbacks, which means that `WebXRInterface` is forced to use signals, where other AR/VR interfaces would instead use functions that return a result immediately. This makes `WebXRInterface` quite a bit more complicated to intialize than other AR/VR interfaces.
+
+	 Here's the minimum code required to start an immersive VR session:
+
+	 ```gdscript
+	 extends Spatial
+	 
+	 var webxr_interface
+	 var vr_supported = false
+	 
+	 func _ready():
+	     # We assume this node has a button as a child.
+	     # This button is for the user to consent to entering immersive VR mode.
+	     $Button.connect("pressed", self, "_on_Button_pressed")
+	 
+	     webxr_interface = ARVRServer.find_interface("WebXR")
+	     if webxr_interface:
+	         # WebXR uses a lot of asynchronous callbacks, so we connect to various
+	         # signals in order to receive them.
+	         webxr_interface.connect("session_supported", self, "_webxr_session_supported")
+	         webxr_interface.connect("session_started", self, "_webxr_session_started")
+	         webxr_interface.connect("session_ended", self, "_webxr_session_ended")
+	         webxr_interface.connect("session_failed", self, "_webxr_session_failed")
+	 
+	         # This returns immediately - our _webxr_session_supported() method
+	         # (which we connected to the "session_supported" signal above) will
+	         # be called sometime later to let us know if it's supported or not.
+	         webxr_interface.is_session_supported("immersive-vr")
+	 
+	 func _webxr_session_supported(session_mode, supported):
+	     if session_mode == 'immersive-vr':
+	         vr_supported = supported
+	 
+	 func _on_Button_pressed():
+	     if not vr_supported:
+	         OS.alert("Your browser doesn't support VR")
+	         return
+	 
+	     # We want an immersive VR session, as opposed to AR ('immersive-ar') or a
+	     # simple 3DoF viewer ('viewer').
+	     webxr_interface.session_mode = 'immersive-vr'
+	     # 'bounded-floor' is room scale, 'local-floor' is a standing or sitting
+	     # experience (it puts you 1.6m above the ground if you have 3DoF headset),
+	     # whereas as 'local' puts you down at the ARVROrigin.
+	     # This list means it'll first try to request 'bounded-floor', then
+	     # fallback on 'local-floor' and ultimately 'local', if nothing else is
+	     # supported.
+	     webxr_interface.requested_reference_space_types = 'bounded-floor, local-floor, local'
+	     # In order to use 'local-floor' or 'bounded-floor' we must also
+	     # mark the features as required or optional.
+	     webxr_interface.required_features = 'local-floor'
+	     webxr_interface.optional_features = 'bounded-floor'
+	 
+	     # This will return false if we're unable to even request the session,
+	     # however, it can still fail asynchronously later in the process, so we
+	     # only know if it's really succeeded or failed when our
+	     # _webxr_session_started() or _webxr_session_failed() methods are called.
+	     if not webxr_interface.initialize():
+	         OS.alert("Failed to initialize")
+	         return
+	 
+	 func _webxr_session_started():
+	     $Button.visible = false
+	     # This tells Godot to start rendering to the headset.
+	     get_viewport().arvr = true
+	     # This will be the reference space type you ultimately got, out of the
+	     # types that you requested above. This is useful if you want the game to
+	     # work a little differently in 'bounded-floor' versus 'local-floor'.
+	     print ("Reference space type: " + webxr_interface.reference_space_type)
+	 
+	 func _webxr_session_ended():
+	     $Button.visible = true
+	     # If the user exits immersive mode, then we tell Godot to render to the web
+	     # page again.
+	     get_viewport().arvr = false
+	 
+	 func _webxr_session_failed(message):
+	     OS.alert("Failed to initialize: " + message)
+	 ```
+
+	 There are several ways to handle "controller" input:
+
+	 - Using `ARVRController` nodes and their `ARVRController.button_pressed` and `ARVRController.button_release` signals. This is how controllers are typically handled in AR/VR apps in Godot, however, this will only work with advanced VR controllers like the Oculus Touch or Index controllers, for example. The buttons codes are defined by `url=https://immersive-web.github.io/webxr-gamepads-module/#xr-standard-gamepad-mapping`Section 3.3 of the WebXR Gamepads Module`/url`.
+
+	 - Using `Node._unhandled_input` and `InputEventJoypadButton` or `InputEventJoypadMotion`. This works the same as normal joypads, except the `InputEvent.device` starts at 100, so the left controller is 100 and the right controller is 101, and the button codes are also defined by `url=https://immersive-web.github.io/webxr-gamepads-module/#xr-standard-gamepad-mapping`Section 3.3 of the WebXR Gamepads Module`/url`.
+
+	 - Using the `select`, `squeeze` and related signals. This method will work for both advanced VR controllers, and non-traditional "controllers" like a tap on the screen, a spoken voice command or a button press on the device itself. The `controller_id` passed to these signals is the same id as used in `ARVRController.controller_id`.
+
+	 You can use one or all of these methods to allow your game or app to support a wider or narrower set of devices and input methods, or to allow more advanced interations with more advanced devices. */
+	class WebXRInterface extends ARVRInterface {
+
+		/** The session mode used by `ARVRInterface.initialize` when setting up the WebXR session.
+
+		 This doesn't have any effect on the interface when already initialized.
+
+		 Possible values come from `url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode`WebXR's XRSessionMode`/url`, including: `"immersive-vr"`, `"immersive-ar"`, and `"inline"`. */
+		session_mode: string;
+
+		/** A comma-seperated list of required features used by `ARVRInterface.initialize` when setting up the WebXR session.
+
+		 If a user's browser or device doesn't support one of the given features, initialization will fail and `session_failed` will be emitted.
+
+		 This doesn't have any effect on the interface when already initialized.
+
+		 Possible values come from `url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType`WebXR's XRReferenceSpaceType`/url`. If you want to use a particular reference space type, it must be listed in either `required_features` or `optional_features`. */
+		required_features: string;
+
+		/** A comma-seperated list of optional features used by `ARVRInterface.initialize` when setting up the WebXR session.
+
+		 If a user's browser or device doesn't support one of the given features, initialization will continue, but you won't be able to use the requested feature.
+
+		 This doesn't have any effect on the interface when already initialized.
+
+		 Possible values come from `url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType`WebXR's XRReferenceSpaceType`/url`. If you want to use a particular reference space type, it must be listed in either `required_features` or `optional_features`. */
+		optional_features: string;
+
+		/** A comma-seperated list of reference space types used by `ARVRInterface.initialize` when setting up the WebXR session.
+
+		 The reference space types are requested in order, and the first on supported by the users device or browser will be used. The `reference_space_type` property contains the reference space type that was ultimately used.
+
+		 This doesn't have any effect on the interface when already initialized.
+
+		 Possible values come from `url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType`WebXR's XRReferenceSpaceType`/url`. If you want to use a particular reference space type, it must be listed in either `required_features` or `optional_features`. */
+		requested_reference_space_types: string;
+
+		/** The reference space type (from the list of requested types set in the `requested_reference_space_types` property), that was ultimately used by `ARVRInterface.initialize` when setting up the WebXR session.
+
+		 Possible values come from `url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType`WebXR's XRReferenceSpaceType`/url`. If you want to use a particular reference space type, it must be listed in either `required_features` or `optional_features`. */
+		reference_space_type: string;
+
+		/** Indicates if the WebXR session's imagery is visible to the user.
+
+		 Possible values come from `url=https://developer.mozilla.org/en-US/docs/Web/API/XRVisibilityState`WebXR's XRVisibilityState`/url`, including `"hidden"`, `"visible"`, and `"visible-blurred"`. */
+		visibility_state: string;
+
+		/** The vertices of a polygon which defines the boundaries of the user's play area.
+
+		 This will only be available if `reference_space_type` is `"bounded-floor"` and only on certain browsers and devices that support it.
+
+		 The `reference_space_reset` signal may indicate when this changes. */
+		bounds_geometry: PoolVector3Array;
+
+		/** Checks if the given `session_mode` is supported by the user's browser.
+
+		 Possible values come from `url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode`WebXR's XRSessionMode`/url`, including: `"immersive-vr"`, `"immersive-ar"`, and `"inline"`.
+
+		 This method returns nothing, instead it emits the `session_supported` signal with the result. */
+		is_session_supported(session_mode: string) : void;
+
+		/** Gets an `ARVRPositionalTracker` for the given `controller_id`.
+
+		 In the context of WebXR, a "controller" can be an advanced VR controller like the Oculus Touch or Index controllers, or even a tap on the screen, a spoken voice command or a button press on the device itself. When a non-traditional controller is used, interpret the position and orientation of the `ARVRPositionalTracker` as a ray pointing at the object the user wishes to interact with.
+
+		 Use this method to get information about the controller that triggered one of these signals:
+
+		 - `selectstart`
+
+		 - `select`
+
+		 - `selectend`
+
+		 - `squeezestart`
+
+		 - `squeeze`
+
+		 - `squeezestart` */
+		get_controller(controller_id: number) : ARVRPositionalTracker;
+
+		/** Getter of `session_mode` property */
+		get_session_mode() : string;
+
+		/** Setter of `session_mode` property */
+		set_session_mode(p_value: string) : void;
+
+		/** Getter of `required_features` property */
+		get_required_features() : string;
+
+		/** Setter of `required_features` property */
+		set_required_features(p_value: string) : void;
+
+		/** Getter of `optional_features` property */
+		get_optional_features() : string;
+
+		/** Setter of `optional_features` property */
+		set_optional_features(p_value: string) : void;
+
+		/** Getter of `requested_reference_space_types` property */
+		get_requested_reference_space_types() : string;
+
+		/** Setter of `requested_reference_space_types` property */
+		set_requested_reference_space_types(p_value: string) : void;
+
+		/** Getter of `reference_space_type` property */
+		get_reference_space_type() : string;
+
+		/** Getter of `visibility_state` property */
+		get_visibility_state() : string;
+
+		/** Getter of `bounds_geometry` property */
+		get_bounds_geometry() : PoolVector3Array;
+	}
+	namespace WebXRInterface {
+
+		/** Emitted when the user ends the WebXR session (which can be done using UI from the browser or device).
+
+			 At this point, you should do `get_viewport().arvr = false` to instruct Godot to resume rendering to the screen. */
+		const session_ended: 'session_ended';
+
+		/** Emitted to indicate that the reference space has been reset or reconfigured.
+
+			 When (or whether) this is emitted depends on the user's browser or device, but may include when the user has changed the dimensions of their play space (which you may be able to access via `bounds_geometry`) or pressed/held a button to recenter their position.
+
+			 See `url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpace/reset_event`WebXR's XRReferenceSpace reset event`/url` for more information. */
+		const reference_space_reset: 'reference_space_reset';
+
+		/** Emitted when one of the "controllers" has started its "primary action".
+
+			 Use `get_controller` to get more information about the controller. */
+		const selectstart: 'selectstart';
+
+		/** Emitted when one of the "controllers" has finished its "primary action".
+
+			 Use `get_controller` to get more information about the controller. */
+		const selectend: 'selectend';
+
+		/** Emitted when one of the "controllers" has started its "primary squeeze action".
+
+			 Use `get_controller` to get more information about the controller. */
+		const squeezestart: 'squeezestart';
+
+		/** Emitted after one of the "controllers" has finished its "primary action".
+
+			 Use `get_controller` to get more information about the controller. */
+		const select: 'select';
+
+		/** Emitted by `ARVRInterface.initialize` if the session fails to start.
+
+			 `message` may optionally contain an error message from WebXR, or an empty string if no message is available. */
+		const session_failed: 'session_failed';
+
+		/** Emitted when `visibility_state` has changed. */
+		const visibility_state_changed: 'visibility_state_changed';
+
+		/** Emitted when one of the "controllers" has finished its "primary squeeze action".
+
+			 Use `get_controller` to get more information about the controller. */
+		const squeezeend: 'squeezeend';
+
+		/** Emitted by `is_session_supported` to indicate if the given `session_mode` is supported or not. */
+		const session_supported: 'session_supported';
+
+		/** Emitted after one of the "controllers" has finished its "primary squeeze action".
+
+			 Use `get_controller` to get more information about the controller. */
+		const squeeze: 'squeeze';
+
+		/** Emitted by `ARVRInterface.initialize` if the session is successfully started.
+
+			 At this point, it's safe to do `get_viewport().arvr = true` to instruct Godot to start rendering to the AR/VR device. */
+		const session_started: 'session_started';
 	}
 
 	/** Base class for window dialogs.
