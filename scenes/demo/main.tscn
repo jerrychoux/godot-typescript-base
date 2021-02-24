@@ -41,3 +41,4 @@ rotation = 3.14159
 [connection signal="timeout" from="enemyTimer" to="." method="_on_enemyTimer_timeout"]
 [connection signal="timeout" from="scoreTimer" to="." method="_on_scoreTimer_timeout"]
 [connection signal="timeout" from="startTimer" to="." method="_on_startTimer_timeout"]
+[connection signal="OnStartGame" from="hud" to="." method="_on_hud_OnStartGame"]

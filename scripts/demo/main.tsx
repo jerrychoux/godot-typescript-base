@@ -3,6 +3,7 @@ import Player from "./player";
 
 import ENEMY from "res://scenes/demo/enemy.tscn";
 import Enemy from "./enemy";
+import Hud from "./hud";
 
 @tool
 export default class Main extends godot.Node2D {
@@ -10,10 +11,11 @@ export default class Main extends godot.Node2D {
 
   _ready() {
     godot.randomize();
-    // this.gameNew();
   }
 
-  _on_player_OnHited(body: godot.Node) {}
+  _on_player_OnHited(body: godot.Node) {
+    this.gameOver();
+  }
 
   _on_startTimer_timeout() {
     let enemyTimer = this.$("enemyTimer") as godot.Timer;
@@ -24,6 +26,9 @@ export default class Main extends godot.Node2D {
 
   _on_scoreTimer_timeout() {
     this.score += 1;
+
+    let hud = this.$("hud") as Hud;
+    hud.updateScore(this.score);
   }
 
   _on_enemyTimer_timeout() {
@@ -48,12 +53,19 @@ export default class Main extends godot.Node2D {
     this.add_child(enemy);
   }
 
+  _on_hud_OnStartGame() {
+    this.gameNew();
+  }
+
   gameOver() {
     let scoreTimer = this.$("scoreTimer") as godot.Timer;
     scoreTimer.stop();
 
     let enemyTimer = this.$("enemyTimer") as godot.Timer;
     enemyTimer.stop();
+
+    let hud = this.$("hud") as Hud;
+    hud.showGameOver();
   }
 
   gameNew() {
@@ -62,8 +74,13 @@ export default class Main extends godot.Node2D {
     let startPosition = this.$("startPosition") as godot.Position2D;
     let player = this.$("player") as Player;
     player.start(startPosition.position);
+    player.show();
 
     let startTimer = this.$("startTimer") as godot.Timer;
     startTimer.start();
+
+    let hud = this.$("hud") as Hud;
+    hud.updateScore(this.score);
+    hud.showMessage("Get Ready");
   }
 }

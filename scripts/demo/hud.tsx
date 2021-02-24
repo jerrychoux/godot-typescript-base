@@ -19,7 +19,16 @@ export default class Hud extends godot.CanvasLayer {
     this.message = this.$("message") as godot.Label;
     this.startButton = this.$("startButton") as godot.Button;
     this.messageTimer = this.$("messageTimer") as godot.Timer;
-    this.showGameOver();
+    // this.showGameOver();
+  }
+
+  _on_startButton_pressed() {
+    this.startButton.hide();
+    this.emit_signal(Hud.OnStartGame);
+  }
+
+  _on_messageTimer_timeout() {
+    this.message.hide();
   }
 
   showMessage(text: string) {
@@ -37,5 +46,9 @@ export default class Hud extends godot.CanvasLayer {
 
     godot.yield(this.get_tree().create_timer(1), "timeout");
     this.startButton.show();
+  }
+
+  updateScore(score: number) {
+    this.scoreLabel.text = godot.str(score);
   }
 }
